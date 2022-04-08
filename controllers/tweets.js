@@ -175,11 +175,36 @@ function answer(req, res) {
 }
 
 function retweet(req, res) {
-  return;
+  const { id } = req.params;
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res
+      .status(400)
+      .json({ sucess: false, msg: "The user id must be informed" });
+  }
+
+  let tweet = tweets_ph.find((tweet) => tweet.id === id);
+
+  if (!tweet) {
+    return res
+      .status(404)
+      .json({ success: false, msg: `Tweet ${id} not found.` });
+  }
+
+  if (tweet.retweeted_by.includes(userId)) {
+    return res.status(400).json({
+      success: false,
+      msg: `User ${userId} already retweet this tweet`,
+    });
+  }
+
+  tweet.retweeted_by.push(userId);
+
+  res.json({ success: true, tweet });
 }
 
 function like(req, res) {
-  
   const { id } = req.params;
   const { userId } = req.body;
 
