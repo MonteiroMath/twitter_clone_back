@@ -170,10 +170,6 @@ FUnction create NewTweet formats the new tweet. Return the newly registered twee
   res.json({ success: true, tweet });
 }
 
-function answer(req, res) {
-  return;
-}
-
 function retweet(req, res) {
   const { id } = req.params;
   const { userId } = req.body;
@@ -202,6 +198,33 @@ function retweet(req, res) {
   tweet.retweeted_by.push(userId);
 
   res.json({ success: true, tweet });
+}
+
+function answer(req, res) {
+  const { id } = req.params;
+  const { userId, newTweet } = req.body;
+
+  if (!userId) {
+    return res
+      .status(400)
+      .json({ sucess: false, msg: "The user id must be informed" });
+  }
+
+  let tweet = tweets_ph.find((tweet) => tweet.id === id);
+
+  if (!tweet) {
+    return res
+      .status(404)
+      .json({ success: false, msg: `Tweet ${id} not found.` });
+  }
+
+  let tt_count = tweets_ph.length;
+  let answer = createNewTweet(tt_count + 1, newTweet);
+
+  tweets_ph.push(answer);
+  tweet.comment_ids.push(answer.id);
+
+  res.json({ success: true, tweet: answer });
 }
 
 function like(req, res) {

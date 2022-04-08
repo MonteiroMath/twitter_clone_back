@@ -27,6 +27,10 @@ router.post("/:id/answer", answer);
 
 routes.post("/:id/retweet", retweet);
 
+//comment route
+
+//routes.post("/:id/comment", comment);
+
 //like route
 router.put("/:id/like", like);
 
