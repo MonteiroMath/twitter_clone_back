@@ -26,13 +26,17 @@ const users_ph = [
 ];
 
 const getUsers = (req, res) => {
+  //return the list of users
   res.json(users_ph);
 };
 
 const getUser = (req, res) => {
+  //gets an user by the id parameter of the ui
+  // return an object containing said user
+
   let { id } = req.params;
 
-  let user = users_ph.find((user) => user.id == id);
+  let user = findUserById(id);
 
   if (!user) {
     return res.status(404).json({ success: false, msg: "User not found" });
@@ -45,6 +49,9 @@ const getUser = (req, res) => {
 };
 
 function verifyUser(req, res, next) {
+  //middleware that verifies if an userId was sent in the body of the request and if the informed corresponds to an actual user
+  //responds with an error if negative. Adds the id to the userId property of the request if positive.
+  
   const { userId } = req.body;
 
   if (!userId) {
@@ -53,9 +60,21 @@ function verifyUser(req, res, next) {
       .json({ sucess: false, msg: "The user id must be informed" });
   }
 
+  const user = findUserById(userId);
+
+  if (!user) {
+    return res
+      .status(404)
+      .json({ sucess: false, msg: `The user ${userId} was not found` });
+  }
+
   req.userId = userId;
 
   next();
+}
+
+function findUserById(id) {
+  return users_ph.find((user) => user.id == id);
 }
 
 module.exports = {

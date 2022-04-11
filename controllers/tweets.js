@@ -120,6 +120,8 @@ const tweets_ph = [
 ];
 
 function getUserTweets(req, res) {
+  //Gets tweets made by an user, returns an array containing the tweets
+
   const { id } = req.params;
   const tweets = tweets_ph.filter((tweet) => tweet.author === parseInt(id));
 
@@ -133,13 +135,15 @@ function getUserTweets(req, res) {
 }
 
 function getTweet(req, res) {
+  //return a tweet made by an user. Searching work is done my the middleware findTweet. Responds with an object that contains the tweet
+
   const { tweet } = req;
   res.json(tweet);
 }
 
 function postTweet(req, res) {
   /* get the new tweet content from the body of the requirement. As a placeholder, uses lenght as id.
-FUnction create NewTweet formats the new tweet. Return the newly registered tweet.
+FUnction create NewTweet formats the new tweet. Responds with the newly registered tweet as an object.
 */
 
   const { newTweet } = req.body;
@@ -161,6 +165,8 @@ FUnction create NewTweet formats the new tweet. Return the newly registered twee
 }
 
 function retweet(req, res) {
+  //add the user to the list of retweeters of the tweet. Responds with the updated tweet as an object
+  //Function needs to be improved to effectively include a retweet object into the list of objects
 
   const { userId, tweet } = req;
 
@@ -177,8 +183,11 @@ function retweet(req, res) {
 }
 
 function answer(req, res) {
-  
-  const { userId, tweet } = req;
+  // Creates a new tweet representing the answer to a previous tweet.
+  // Includes the id of the answer into the comment_ids property of the old tweet
+  // Responds with both the old tweet, updated, and the answer as objects
+
+  const { tweet } = req;
   const { newTweet } = req.body;
 
   let tt_count = tweets_ph.length;
@@ -187,17 +196,20 @@ function answer(req, res) {
   tweets_ph.push(answer);
   tweet.comment_ids.push(answer.id);
 
-  res.json({ success: true, tweet: answer });
+  res.json({ success: true, old_tweet: tweet, answer });
 }
 
 function like(req, res) {
+  //Includes the userId in the liked_by property of the tweet
+  //Responds with the updated tweet as an object
 
   const { userId, tweet } = req;
 
   if (tweet.liked_by.includes(userId)) {
-    return res
-      .status(400)
-      .json({ success: false, msg: `User ${userId} already liked this tweet` });
+    return res.status(400).json({
+      success: false,
+      msg: `User ${userId} already liked this tweet`,
+    });
   }
 
   tweet.liked_by.push(userId);
@@ -205,9 +217,12 @@ function like(req, res) {
   res.json({ success: true, tweet });
 }
 
-function findTweetById(req, res, next) {
+function findTweet(req, res, next) {
+  //middleware to find a tweet. Adds it to the tweet property of the req.
+  //responds with a 404 error if no tweet is found with the id informed in the url
+
   const { id } = req.params;
-  const tweet = tweets_ph.find((tweet) => tweet.id === parseInt(id));
+  const tweet = findTweetById(id);
 
   if (!tweet) {
     return res
@@ -220,6 +235,11 @@ function findTweetById(req, res, next) {
 }
 
 //move to utility function
+
+function findTweetById(id) {
+  //utilify function that searchs for a tweet by its id
+  return tweets_ph.find((tweet) => tweet.id === parseInt(id));
+}
 
 function createNewTweet(id, content) {
   /*
@@ -259,5 +279,5 @@ module.exports = {
   like,
   answer,
   retweet,
-  findTweetById,
+  findTweet,
 };
