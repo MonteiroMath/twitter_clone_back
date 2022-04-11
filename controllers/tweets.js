@@ -133,15 +133,7 @@ function getUserTweets(req, res) {
 }
 
 function getTweet(req, res) {
-  const { id } = req.params;
-  const tweet = tweets_ph.find((tweet) => tweet.id === parseInt(id));
-
-  if (!tweet) {
-    return res
-      .status(404)
-      .json({ success: false, msg: `Tweet ${id} not found` });
-  }
-
+  const { tweet } = req;
   res.json(tweet);
 }
 
@@ -169,22 +161,8 @@ FUnction create NewTweet formats the new tweet. Return the newly registered twee
 }
 
 function retweet(req, res) {
-  const { id } = req.params;
-  const { userId } = req.body;
 
-  if (!userId) {
-    return res
-      .status(400)
-      .json({ sucess: false, msg: "The user id must be informed" });
-  }
-
-  let tweet = tweets_ph.find((tweet) => tweet.id === parseInt(id));
-
-  if (!tweet) {
-    return res
-      .status(404)
-      .json({ success: false, msg: `Tweet ${id} not found.` });
-  }
+  const { userId, tweet } = req;
 
   if (tweet.retweeted_by.includes(userId)) {
     return res.status(400).json({
@@ -199,22 +177,9 @@ function retweet(req, res) {
 }
 
 function answer(req, res) {
-  const { id } = req.params;
-  const { userId, newTweet } = req.body;
-
-  if (!userId) {
-    return res
-      .status(400)
-      .json({ sucess: false, msg: "The user id must be informed" });
-  }
-
-  let tweet = tweets_ph.find((tweet) => tweet.id === parseInt(id));
-
-  if (!tweet) {
-    return res
-      .status(404)
-      .json({ success: false, msg: `Tweet ${id} not found.` });
-  }
+  
+  const { userId, tweet } = req;
+  const { newTweet } = req.body;
 
   let tt_count = tweets_ph.length;
   let answer = createNewTweet(tt_count + 1, newTweet);
@@ -226,22 +191,8 @@ function answer(req, res) {
 }
 
 function like(req, res) {
-  const { id } = req.params;
-  const { userId } = req.body;
 
-  if (!userId) {
-    return res
-      .status(400)
-      .json({ sucess: false, msg: "The user id must be informed" });
-  }
-
-  let tweet = tweets_ph.find((tweet) => tweet.id === parseInt(id));
-
-  if (!tweet) {
-    return res
-      .status(404)
-      .json({ success: false, msg: `Tweet ${id} not found.` });
-  }
+  const { userId, tweet } = req;
 
   if (tweet.liked_by.includes(userId)) {
     return res
@@ -252,6 +203,20 @@ function like(req, res) {
   tweet.liked_by.push(userId);
 
   res.json({ success: true, tweet });
+}
+
+function findTweetById(req, res, next) {
+  const { id } = req.params;
+  const tweet = tweets_ph.find((tweet) => tweet.id === parseInt(id));
+
+  if (!tweet) {
+    return res
+      .status(404)
+      .json({ success: false, msg: `Tweet ${id} not found` });
+  }
+
+  req.tweet = tweet;
+  next();
 }
 
 //move to utility function
@@ -294,4 +259,5 @@ module.exports = {
   like,
   answer,
   retweet,
+  findTweetById,
 };

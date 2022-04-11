@@ -44,7 +44,22 @@ const getUser = (req, res) => {
   });
 };
 
+function verifyUser(req, res, next) {
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res
+      .status(400)
+      .json({ sucess: false, msg: "The user id must be informed" });
+  }
+
+  req.userId = userId;
+
+  next();
+}
+
 module.exports = {
   getUsers,
   getUser,
+  verifyUser,
 };

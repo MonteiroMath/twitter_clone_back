@@ -7,7 +7,10 @@ const {
   like,
   answer,
   retweet,
+  findTweetById,
 } = require("../controllers/tweets");
+
+const { verifyUser } = require("../controllers/users");
 
 //Post a new tweet
 router.post("/", postTweet);
@@ -16,21 +19,21 @@ router.post("/", postTweet);
 router.get("/user/:id", getUserTweets);
 
 //get a Tweet by id
-router.get("/:id", getTweet);
+router.get("/:id", findTweetById, getTweet);
 
 //answer route
 
-router.post("/:id/answer", answer);
+router.post("/:id/answer", verifyUser, findTweetById, answer);
 
 //retweet route
 
-router.post("/:id/retweet", retweet);
+router.post("/:id/retweet", verifyUser, findTweetById, retweet);
 
 //comment route
 
 //router.post("/:id/comment", comment);
 
 //like route
-router.post("/:id/like", like);
+router.post("/:id/like", verifyUser, findTweetById, like);
 
 module.exports = router;
