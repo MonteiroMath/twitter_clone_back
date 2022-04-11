@@ -1,5 +1,4 @@
 const express = require("express");
-const { routes } = require("../app");
 const router = express.Router();
 const {
   getUserTweets,
@@ -25,13 +24,13 @@ router.post("/:id/answer", answer);
 
 //retweet route
 
-routes.post("/:id/retweet", retweet);
+router.post("/:id/retweet", retweet);
 
 //comment route
 
-//routes.post("/:id/comment", comment);
+//router.post("/:id/comment", comment);
 
 //like route
-router.put("/:id/like", like);
+router.post("/:id/like", like);
 
 module.exports = router;

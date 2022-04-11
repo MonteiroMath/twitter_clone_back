@@ -1,5 +1,3 @@
-const { default: tweets } = require("../../twitter/src/placeholders/tweets");
-
 const tweets_ph = [
   {
     id: 0,
@@ -122,8 +120,8 @@ const tweets_ph = [
 ];
 
 function getUserTweets(req, res) {
-  const tweets = tweets_ph.filter((tweet) => tweet.author == id);
   const { id } = req.params;
+  const tweets = tweets_ph.filter((tweet) => tweet.author === parseInt(id));
 
   if (tweets.length === 0) {
     return res
@@ -136,7 +134,7 @@ function getUserTweets(req, res) {
 
 function getTweet(req, res) {
   const { id } = req.params;
-  const tweet = tweets_ph.find(tweet.id === id);
+  const tweet = tweets_ph.find((tweet) => tweet.id === parseInt(id));
 
   if (!tweet) {
     return res
@@ -180,7 +178,7 @@ function retweet(req, res) {
       .json({ sucess: false, msg: "The user id must be informed" });
   }
 
-  let tweet = tweets_ph.find((tweet) => tweet.id === id);
+  let tweet = tweets_ph.find((tweet) => tweet.id === parseInt(id));
 
   if (!tweet) {
     return res
@@ -210,7 +208,7 @@ function answer(req, res) {
       .json({ sucess: false, msg: "The user id must be informed" });
   }
 
-  let tweet = tweets_ph.find((tweet) => tweet.id === id);
+  let tweet = tweets_ph.find((tweet) => tweet.id === parseInt(id));
 
   if (!tweet) {
     return res
@@ -237,7 +235,7 @@ function like(req, res) {
       .json({ sucess: false, msg: "The user id must be informed" });
   }
 
-  let tweet = tweets_ph.find((tweet) => tweet.id === id);
+  let tweet = tweets_ph.find((tweet) => tweet.id === parseInt(id));
 
   if (!tweet) {
     return res
