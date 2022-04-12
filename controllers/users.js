@@ -51,7 +51,7 @@ const getUser = (req, res) => {
 function verifyUser(req, res, next) {
   //middleware that verifies if an userId was sent in the body of the request and if the informed corresponds to an actual user
   //responds with an error if negative. Adds the id to the userId property of the request if positive.
-  
+
   const { userId } = req.body;
 
   if (!userId) {
@@ -68,13 +68,13 @@ function verifyUser(req, res, next) {
       .json({ sucess: false, msg: `The user ${userId} was not found` });
   }
 
-  req.userId = userId;
+  req.userId = parseInt(userId);
 
   next();
 }
 
 function findUserById(id) {
-  return users_ph.find((user) => user.id == id);
+  return users_ph.find((user) => user.id === parseInt(id));
 }
 
 module.exports = {

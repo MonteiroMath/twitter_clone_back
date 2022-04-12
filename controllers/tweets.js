@@ -182,6 +182,23 @@ function retweet(req, res) {
   res.json({ success: true, tweet });
 }
 
+function undoRetweet(req, res) {
+  //Remove the user from the list of retweeters. Responds with the updated tweet as an object.
+  //Needs to be improved to effectively remove a retweet object from the list of objects
+  const { userId, tweet } = req;
+
+  if (!tweet.retweeted_by.includes(userId)) {
+    return res.status(400).json({
+      success: false,
+      msg: `User ${userId} has not retweeted this tweet`,
+    });
+  }
+
+  tweet.retweeted_by = tweet.retweeted_by.filter((id) => userId !== id);
+
+  res.json({ success: true, tweet });
+}
+
 function answer(req, res) {
   // Creates a new tweet representing the answer to a previous tweet.
   // Includes the id of the answer into the comment_ids property of the old tweet
@@ -213,6 +230,23 @@ function like(req, res) {
   }
 
   tweet.liked_by.push(userId);
+
+  res.json({ success: true, tweet });
+}
+
+function unlike(req, res) {
+  //Remove a like from a tweet, responds with an object containing the updated tweet
+
+  const { userId, tweet } = req;
+
+  if (!tweet.liked_by.includes(userId)) {
+    return res.status(400).json({
+      success: false,
+      msg: `User ${userId} has not liked this tweet`,
+    });
+  }
+
+  tweet.liked_by = tweet.liked_by.filter((id) => id !== userId);
 
   res.json({ success: true, tweet });
 }
@@ -277,7 +311,9 @@ module.exports = {
   getTweet,
   postTweet,
   like,
+  unlike,
   answer,
   retweet,
+  undoRetweet,
   findTweet,
 };

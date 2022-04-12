@@ -5,8 +5,10 @@ const {
   getTweet,
   postTweet,
   like,
+  unlike,
   answer,
   retweet,
+  undoRetweet,
   findTweet,
 } = require("../controllers/tweets");
 
@@ -29,11 +31,19 @@ router.post("/:id/answer", verifyUser, findTweet, answer);
 
 router.post("/:id/retweet", verifyUser, findTweet, retweet);
 
+//undo retweet route
+
+router.delete("/:id/retweet", verifyUser, findTweet, undoRetweet);
+
 //comment route
 
 //router.post("/:id/comment", comment);
 
 //like route
 router.post("/:id/like", verifyUser, findTweet, like);
+
+//unlike route
+
+router.delete("/:id/like", verifyUser, findTweet, unlike);
 
 module.exports = router;
