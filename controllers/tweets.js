@@ -4,7 +4,6 @@ const tweets_ph = [
     author: 1,
     created: new Date().getTime(),
     message: "This is my first tweet, hi everyone",
-    likes: 3,
     liked_by: [],
     retweeted_by: [],
     comment_ids: [1],
@@ -18,7 +17,6 @@ const tweets_ph = [
       author: 1,
       created: new Date().getTime(),
       message: "This is my first tweet, hi everyone",
-      likes: 3,
       retweets: 0,
       comments: 0,
       attach: "/images/phattach.jpeg",
@@ -31,7 +29,6 @@ const tweets_ph = [
     author: 1,
     created: new Date().getTime(),
     message: "This is my second tweet lol getting good at this",
-    likes: 3,
     retweets: 0,
     liked_by: [],
     retweeted_by: [],
@@ -47,7 +44,6 @@ const tweets_ph = [
     author: 1,
     created: new Date().getTime(),
     message: "Ok it is getting harder now",
-    likes: 3,
     retweets: 0,
     liked_by: [],
     retweeted_by: [],
@@ -61,7 +57,6 @@ const tweets_ph = [
       author: 1,
       created: new Date().getTime(),
       message: "This is my first tweet, hi everyone",
-      likes: 3,
       retweets: 0,
       comments: 0,
       attach: "/images/phattach.jpeg",
@@ -74,7 +69,6 @@ const tweets_ph = [
     author: 1,
     created: new Date().getTime(),
     message: "Hate the character limit, anyone with me?",
-    likes: 3,
     retweets: 0,
     liked_by: [],
     retweeted_by: [],
@@ -90,7 +84,6 @@ const tweets_ph = [
     author: 1,
     created: new Date().getTime(),
     message: "How do you win at this",
-    likes: 3,
     retweets: 0,
     liked_by: [],
     retweeted_by: [],
@@ -164,6 +157,11 @@ FUnction create NewTweet formats the new tweet. Responds with the newly register
   res.json({ success: true, tweet });
 }
 
+function updateTweet(req, res) {
+  const { tweet } = req;
+  const { updatedTweet } = req.body;
+}
+
 function retweet(req, res) {
   //add the user to the list of retweeters of the tweet. Responds with the updated tweet as an object
   //Function needs to be improved to effectively include a retweet object into the list of objects
@@ -230,7 +228,7 @@ function like(req, res) {
   }
 
   tweet.liked_by.push(userId);
-
+  
   res.json({ success: true, tweet });
 }
 
