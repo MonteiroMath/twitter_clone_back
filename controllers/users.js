@@ -54,8 +54,6 @@ function verifyUser(req, res, next) {
 
   const { userId } = req.body;
 
-  console.log(req.body.userId);
-
   if (!userId) {
     return res
       .status(400)

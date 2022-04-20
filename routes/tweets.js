@@ -4,8 +4,7 @@ const {
   getUserTweets,
   getTweet,
   postTweet,
-  like,
-  unlike,
+  handleLike,
   answer,
   retweet,
   undoRetweet,
@@ -40,10 +39,6 @@ router.delete("/:id/retweet", verifyUser, findTweet, undoRetweet);
 //router.post("/:id/comment", comment);
 
 //like route
-router.post("/:id/like", verifyUser, findTweet, like);
-
-//unlike route
-
-router.delete("/:id/like", verifyUser, findTweet, unlike);
+router.put("/:id/likes", verifyUser, findTweet, handleLike);
 
 module.exports = router;

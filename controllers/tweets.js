@@ -200,37 +200,32 @@ function answer(req, res) {
   res.json({ success: true, old_tweet: tweet, answer });
 }
 
-function like(req, res) {
+function handleLike(req, res) {
   //Includes the userId in the liked_by property of the tweet
   //Responds with the updated tweet as an object
 
   const { userId, tweet } = req;
+  const { like } = req.body;
+  
+  const userAlreadyLikes = tweet.liked_by.includes(userId);
 
-  if (tweet.liked_by.includes(userId)) {
+  if (like && userAlreadyLikes) {
     return res.status(400).json({
       success: false,
-      msg: `User ${userId} already liked this tweet`,
+      msg: `User ${userId} has already liked this tweet`,
     });
-  }
-
-  tweet.liked_by.push(userId);
-  
-  res.json({ success: true, tweet });
-}
-
-function unlike(req, res) {
-  //Remove a like from a tweet, responds with an object containing the updated tweet
-
-  const { userId, tweet } = req;
-
-  if (!tweet.liked_by.includes(userId)) {
+  } else if (!like && !userAlreadyLikes) {
     return res.status(400).json({
       success: false,
       msg: `User ${userId} has not liked this tweet`,
     });
   }
 
-  tweet.liked_by = tweet.liked_by.filter((id) => id !== userId);
+  if (like) {
+    tweet.liked_by.push(userId);
+  } else {
+    tweet.liked_by = tweet.liked_by.filter((id) => id !== userId);
+  }
 
   res.json({ success: true, tweet });
 }
@@ -251,8 +246,6 @@ function findTweet(req, res, next) {
   req.tweet = tweet;
   next();
 }
-
-//move to utility function
 
 function findTweetById(id) {
   //utilify function that searchs for a tweet by its id
@@ -294,8 +287,7 @@ module.exports = {
   getUserTweets,
   getTweet,
   postTweet,
-  like,
-  unlike,
+  handleLike,
   answer,
   retweet,
   undoRetweet,
