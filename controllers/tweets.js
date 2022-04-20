@@ -206,7 +206,14 @@ function handleLike(req, res) {
 
   const { userId, tweet } = req;
   const { like } = req.body;
-  
+
+  if (like == null) {
+    return res.status(400).json({
+      success: false,
+      msg: "A value must be informed for like",
+    });
+  }
+
   const userAlreadyLikes = tweet.liked_by.includes(userId);
 
   if (like && userAlreadyLikes) {
