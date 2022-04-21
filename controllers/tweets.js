@@ -161,9 +161,18 @@ function retweet(req, res) {
     });
   }
 
-  tweet.retweeted_by.push(userId);
+  let tt_count = tweets_ph.length;
+  let retweet = {
+    id: 10000 + tt_count + 1,
+    author: 1,
+    created: new Date().getTime(),
+    tweetId: tweet.id,
+  };
 
-  res.json({ success: true, tweet });
+  tweet.retweeted_by.push(userId);
+  tweets_ph.push(retweet);
+
+  res.json({ success: true, updatedTweet: tweet, retweet });
 }
 
 function undoRetweet(req, res) {
