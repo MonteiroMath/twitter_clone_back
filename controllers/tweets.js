@@ -187,9 +187,10 @@ function undoRetweet(req, res) {
     });
   }
 
+  tweets_ph.filter((tweet) => tweet.tweetId !== tweet.id);
   tweet.retweeted_by = tweet.retweeted_by.filter((id) => userId !== id);
 
-  res.json({ success: true, tweet });
+  res.json({ success: true, updatedTweet: tweet });
 }
 
 function answer(req, res) {
