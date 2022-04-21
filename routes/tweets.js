@@ -7,6 +7,7 @@ const {
   handleLike,
   answer,
   retweet,
+  comment,
   undoRetweet,
   findTweet,
 } = require("../controllers/tweets");
@@ -22,10 +23,6 @@ router.get("/user/:id", getUserTweets);
 //get a Tweet by id
 router.get("/:id", findTweet, getTweet);
 
-//answer route
-
-router.post("/:id/answer", verifyUser, findTweet, answer);
-
 //retweet route
 
 router.post("/:id/retweet", verifyUser, findTweet, retweet);
@@ -34,9 +31,9 @@ router.post("/:id/retweet", verifyUser, findTweet, retweet);
 
 router.delete("/:id/retweet", verifyUser, findTweet, undoRetweet);
 
-//comment route
+//comment/answer route
 
-//router.post("/:id/comment", comment);
+router.post("/:id/comment", findTweet, comment);
 
 //like route
 router.put("/:id/likes", verifyUser, findTweet, handleLike);

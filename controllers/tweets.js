@@ -193,7 +193,7 @@ function undoRetweet(req, res) {
   res.json({ success: true, updatedTweet: tweet });
 }
 
-function answer(req, res) {
+function comment(req, res) {
   // Creates a new tweet representing the answer to a previous tweet.
   // Includes the id of the answer into the comment_ids property of the old tweet
   // Responds with both the old tweet, updated, and the answer as objects
@@ -202,12 +202,12 @@ function answer(req, res) {
   const { newTweet } = req.body;
 
   let tt_count = tweets_ph.length;
-  let answer = createNewTweet(tt_count + 1, newTweet);
+  let comment = createNewTweet(tt_count + 1, newTweet);
 
-  tweets_ph.push(answer);
-  tweet.comment_ids.push(answer.id);
+  tweets_ph.push(comment);
+  tweet.comment_ids.push(comment.id);
 
-  res.json({ success: true, old_tweet: tweet, answer });
+  res.json({ success: true, updatedTweet: tweet, comment });
 }
 
 function handleLike(req, res) {
@@ -305,8 +305,8 @@ module.exports = {
   getTweet,
   postTweet,
   handleLike,
-  answer,
   retweet,
+  comment,
   undoRetweet,
   findTweet,
 };
