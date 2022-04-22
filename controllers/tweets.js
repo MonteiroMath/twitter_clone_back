@@ -98,6 +98,10 @@ const tweets_ph = [
   },
 ];
 
+function sendNotFoundError(res, msg) {
+  return res.status(404).json({ success: false, msg });
+}
+
 function getUserTweets(req, res) {
   //Gets tweets made by an user, returns an array containing the tweets
 
@@ -105,9 +109,7 @@ function getUserTweets(req, res) {
   const tweets = tweets_ph.filter((tweet) => tweet.author === parseInt(id));
 
   if (tweets.length === 0) {
-    return res
-      .status(404)
-      .json({ success: false, msg: `No tweets found for user ${id}` });
+    return sendNotFoundError(res, `No tweets found for user ${id}`);
   }
 
   res.json({ success: true, tweets });
@@ -141,11 +143,6 @@ FUnction create NewTweet formats the new tweet. Responds with the newly register
   tweets_ph.push(tweet);
 
   res.json({ success: true, tweet });
-}
-
-function updateTweet(req, res) {
-  const { tweet } = req;
-  const { updatedTweet } = req.body;
 }
 
 function retweet(req, res) {
@@ -255,9 +252,7 @@ function findTweet(req, res, next) {
   const tweet = findTweetById(id);
 
   if (!tweet) {
-    return res
-      .status(404)
-      .json({ success: false, msg: `Tweet ${id} not found` });
+    return sendNotFoundError(res, `Tweet ${id} not found`);
   }
 
   req.tweet = tweet;
