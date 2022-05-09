@@ -1,3 +1,5 @@
+const { getTweets } = require("../db/dbAdapter");
+
 const tweets_ph = [
   {
     id: 0,
@@ -102,11 +104,10 @@ function sendNotFoundError(res, msg) {
   return res.status(404).json({ success: false, msg });
 }
 
-function getUserTweets(req, res) {
-  //Gets tweets made by an user, returns an array containing the tweets
-
+async function getUserTweets(req, res) {
   const { id } = req.params;
-  const tweets = tweets_ph.filter((tweet) => tweet.author === parseInt(id));
+  const tweets = await getTweets(id);
+
 
   if (tweets.length === 0) {
     return sendNotFoundError(res, `No tweets found for user ${id}`);
@@ -114,6 +115,19 @@ function getUserTweets(req, res) {
 
   res.json({ success: true, tweets });
 }
+
+//function getUserTweets(req, res) {
+//  //Gets tweets made by an user, returns an array containing the tweets
+//
+//  const { id } = req.params;
+//  const tweets = tweets_ph.filter((tweet) => tweet.author === parseInt(id));
+//
+//  if (tweets.length === 0) {
+//    return sendNotFoundError(res, `No tweets found for user ${id}`);
+//  }
+//
+//  res.json({ success: true, tweets });
+//}
 
 function getTweet(req, res) {
   //return a tweet made by an user. Searching work is done my the middleware findTweet. Responds with an object that contains the tweet
