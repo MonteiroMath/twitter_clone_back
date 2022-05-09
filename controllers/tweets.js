@@ -1,4 +1,4 @@
-const { getTweets } = require("../db/dbAdapter");
+const { getTweets, getTweetById, saveTweet } = require("../db/dbAdapter");
 
 const tweets_ph = [
   {
@@ -108,26 +108,12 @@ async function getUserTweets(req, res) {
   const { id } = req.params;
   const tweets = await getTweets(id);
 
-
   if (tweets.length === 0) {
     return sendNotFoundError(res, `No tweets found for user ${id}`);
   }
 
   res.json({ success: true, tweets });
 }
-
-//function getUserTweets(req, res) {
-//  //Gets tweets made by an user, returns an array containing the tweets
-//
-//  const { id } = req.params;
-//  const tweets = tweets_ph.filter((tweet) => tweet.author === parseInt(id));
-//
-//  if (tweets.length === 0) {
-//    return sendNotFoundError(res, `No tweets found for user ${id}`);
-//  }
-//
-//  res.json({ success: true, tweets });
-//}
 
 function getTweet(req, res) {
   //return a tweet made by an user. Searching work is done my the middleware findTweet. Responds with an object that contains the tweet
@@ -136,12 +122,12 @@ function getTweet(req, res) {
   res.json(tweet);
 }
 
-function postTweet(req, res) {
+async function postTweet(req, res, next) {
   /* get the new tweet content from the body of the requirement. As a placeholder, uses lenght as id.
 FUnction create NewTweet formats the new tweet. Responds with the newly registered tweet as an object.
 */
 
-  const { newTweet } = req.body;
+  const { userId, newTweet } = req.body;
 
   if (!newTweet) {
     return res.status(400).json({
@@ -150,13 +136,13 @@ FUnction create NewTweet formats the new tweet. Responds with the newly register
     });
   }
 
-  let tt_count = tweets_ph.length;
+  try {
+    let tweet = await saveTweet(userId, newTweet);
 
-  let tweet = createNewTweet(tt_count + 1, newTweet);
-
-  tweets_ph.push(tweet);
-
-  res.json({ success: true, tweet });
+    res.json({ success: true, tweet });
+  } catch (err) {
+    next(err);
+  }
 }
 
 function retweet(req, res) {
@@ -258,12 +244,12 @@ function handleLike(req, res) {
   res.json({ success: true, tweet });
 }
 
-function findTweet(req, res, next) {
+async function findTweet(req, res, next) {
   //middleware to find a tweet. Adds it to the tweet property of the req.
   //responds with a 404 error if no tweet is found with the id informed in the url
 
   const { id } = req.params;
-  const tweet = findTweetById(id);
+  const tweet = await getTweetById(id);
 
   if (!tweet) {
     return sendNotFoundError(res, `Tweet ${id} not found`);
@@ -271,11 +257,6 @@ function findTweet(req, res, next) {
 
   req.tweet = tweet;
   next();
-}
-
-function findTweetById(id) {
-  //utilify function that searchs for a tweet by its id
-  return tweets_ph.find((tweet) => tweet.id === parseInt(id));
 }
 
 function createNewTweet(id, content) {
