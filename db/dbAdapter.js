@@ -30,7 +30,12 @@ async function getTweetById(id) {
     [id]
   );
 
-  return data[0];
+  const tweet = data[0];
+  const likes = await getLikes(id);
+
+  tweet.liked_by = likes;
+
+  return tweet;
 }
 
 async function saveTweet(author, content) {
@@ -44,8 +49,48 @@ async function saveTweet(author, content) {
   return getTweetById(insertId);
 }
 
+async function repeatedLike(author, tweet) {
+  let { data } = await executeQuery(
+    "SELECT EXISTS(SELECT * FROM `likes` WHERE user=? AND tweet=?)",
+    [author, tweet]
+  );
+
+  const existenceCode = Object.values(data[0])[0];
+
+  return existenceCode === 1;
+}
+
+async function addLike(author, tweet) {
+  let { data } = await executeQuery(
+    "INSERT INTO `likes` (user, tweet) VALUES(?, ?);",
+    [author, tweet]
+  );
+
+  const { insertId } = data;
+
+  return insertId;
+}
+
+async function removeLike(author, tweet) {
+  let { data } = await executeQuery(
+    "DELETE FROM `likes` WHERE user=? AND tweet=?;",
+    [author, tweet]
+  );
+}
+
+async function getLikes(tweet) {
+  let { data } = await executeQuery("SELECT user FROM likes WHERE tweet=?", [
+    tweet,
+  ]);
+
+  return data.map((like) => like.user);
+}
+
 module.exports = {
   getTweets,
   getTweetById,
   saveTweet,
+  repeatedLike,
+  addLike,
+  removeLike,
 };

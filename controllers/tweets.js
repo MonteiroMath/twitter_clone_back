@@ -1,4 +1,11 @@
-const { getTweets, getTweetById, saveTweet } = require("../db/dbAdapter");
+const {
+  getTweets,
+  getTweetById,
+  saveTweet,
+  repeatedLike,
+  addLike,
+  removeLike,
+} = require("../db/dbAdapter");
 
 const tweets_ph = [
   {
@@ -104,8 +111,9 @@ function sendNotFoundError(res, msg) {
   return res.status(404).json({ success: false, msg });
 }
 
-async function getUserTweets(req, res) {
+async function getUserTweets(req, res, next) {
   const { id } = req.params;
+
   const tweets = await getTweets(id);
 
   if (tweets.length === 0) {
@@ -207,7 +215,7 @@ function comment(req, res) {
   res.json({ success: true, updatedTweet: tweet, comment });
 }
 
-function handleLike(req, res) {
+async function handleLike(req, res) {
   //Includes the userId in the liked_by property of the tweet
   //Responds with the updated tweet as an object
 
@@ -221,7 +229,7 @@ function handleLike(req, res) {
     });
   }
 
-  const userAlreadyLikes = tweet.liked_by.includes(userId);
+  const userAlreadyLikes = await repeatedLike(userId, tweet.id);
 
   if (like && userAlreadyLikes) {
     return res.status(400).json({
@@ -236,12 +244,12 @@ function handleLike(req, res) {
   }
 
   if (like) {
-    tweet.liked_by.push(userId);
+    result = await addLike(userId, tweet.id);
   } else {
-    tweet.liked_by = tweet.liked_by.filter((id) => id !== userId);
+    result = await removeLike(userId, tweet.id);
   }
 
-  res.json({ success: true, tweet });
+  res.json({ success: true });
 }
 
 async function findTweet(req, res, next) {
