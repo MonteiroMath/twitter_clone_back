@@ -17,11 +17,19 @@ async function executeQuery(query, params) {
 
 async function getTweets(id) {
   const { data } = await executeQuery(
-    "SELECT * FROM `twittertest` WHERE author=?",
+    "SELECT * FROM `twittertest` WHERE author=? LIMIT 10",
     [id]
   );
 
-  return data;
+  const tweets = await Promise.all(
+    data.map(async (tweet) => {
+      const likes = await getLikes(tweet.id);
+      tweet.liked_by = likes;
+      return tweet;
+    })
+  );
+
+  return tweets;
 }
 
 async function getTweetById(id) {
