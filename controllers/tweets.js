@@ -5,6 +5,9 @@ const {
   repeatedLike,
   addLike,
   removeLike,
+  repeatedRetweet,
+  postRetweet,
+  deleteRetweet,
 } = require("../db/dbAdapter");
 
 const tweets_ph = [
@@ -153,46 +156,43 @@ FUnction create NewTweet formats the new tweet. Responds with the newly register
   }
 }
 
-function retweet(req, res) {
+async function retweet(req, res) {
   //add the user to the list of retweeters of the tweet. Responds with the updated tweet as an object
   //Function needs to be improved to effectively include a retweet object into the list of objects
 
   const { userId, tweet } = req;
 
-  if (tweet.retweeted_by.includes(userId)) {
+  const userAlreadyRetweeted = await repeatedRetweet(userId, tweet.id);
+
+  if (userAlreadyRetweeted) {
     return res.status(400).json({
       success: false,
       msg: `User ${userId} already retweet this tweet`,
     });
   }
 
-  let tt_count = tweets_ph.length;
-  let retweet = {
-    id: 10000 + tt_count + 1,
-    author: 1,
-    created: new Date().getTime(),
-    tweetId: tweet.id,
-  };
+  newRetweet = await postRetweet(userId, twitter.id);
 
   tweet.retweeted_by.push(userId);
-  tweets_ph.push(retweet);
 
-  res.json({ success: true, updatedTweet: tweet, retweet });
+  res.json({ success: true, updatedTweet: tweet, retweet: newRetweet });
 }
 
-function undoRetweet(req, res) {
+async function undoRetweet(req, res) {
   //Remove the user from the list of retweeters. Responds with the updated tweet as an object.
   //Needs to be improved to effectively remove a retweet object from the list of objects
   const { userId, tweet } = req;
 
-  if (!tweet.retweeted_by.includes(userId)) {
+  const userAlreadyRetweeted = await repeatedRetweet(userId, tweet.id);
+
+  if (!userAlreadyRetweeted) {
     return res.status(400).json({
       success: false,
       msg: `User ${userId} has not retweeted this tweet`,
     });
   }
 
-  tweets_ph.filter((tweet) => tweet.tweetId !== tweet.id);
+  await deleteRetweet(userId, tweet.id);
   tweet.retweeted_by = tweet.retweeted_by.filter((id) => userId !== id);
 
   res.json({ success: true, updatedTweet: tweet });
@@ -245,11 +245,15 @@ async function handleLike(req, res) {
 
   if (like) {
     result = await addLike(userId, tweet.id);
+    tweet.liked_by.push(userId);
   } else {
     result = await removeLike(userId, tweet.id);
+    tweet.liked_by = tweet.liked_by.filter((id) => id != userId);
   }
 
-  res.json({ success: true });
+  console.log(tweet);
+
+  res.json({ success: true, tweet });
 }
 
 async function findTweet(req, res, next) {

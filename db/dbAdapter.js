@@ -17,7 +17,7 @@ async function executeQuery(query, params) {
 
 async function getTweets(id) {
   const { data } = await executeQuery(
-    "SELECT * FROM `twittertest` WHERE author=? LIMIT 10",
+    "SELECT * FROM `twittertest` WHERE author=? ORDER BY id DESC LIMIT 10",
     [id]
   );
 
@@ -25,6 +25,17 @@ async function getTweets(id) {
     data.map(async (tweet) => {
       const likes = await getLikes(tweet.id);
       tweet.liked_by = likes;
+      tweet.retweeted_by = [];
+      tweet.comment_ids = [];
+      tweet.pollSettings = {
+        choices: ["hi", "ho"],
+        pollLen: {
+          days: 1,
+          hours: 3,
+          minutes: 35,
+        },
+      };
+
       return tweet;
     })
   );
@@ -42,6 +53,16 @@ async function getTweetById(id) {
   const likes = await getLikes(id);
 
   tweet.liked_by = likes;
+  tweet.retweeted_by = [];
+  tweet.comment_ids = [];
+  tweet.pollSettings = {
+    choices: ["hi", "ho"],
+    pollLen: {
+      days: 1,
+      hours: 3,
+      minutes: 35,
+    },
+  };
 
   return tweet;
 }
@@ -94,6 +115,38 @@ async function getLikes(tweet) {
   return data.map((like) => like.user);
 }
 
+async function repeatedRetweet(author, tweet) {
+  let { data } = await executeQuery(
+    "SELECT EXISTS(SELECT * FROM `retweet` WHERE user=? AND tweet=?)",
+    [author, tweet]
+  );
+
+  const existenceCode = Object.values(data[0])[0];
+
+  return existenceCode === 1;
+}
+
+async function postRetweet(author, tweet) {
+  let { data } = await executeQuery(
+    "INSERT INTO `retweets` (user, tweet) VALUES(?, ?);",
+    [author, tweet]
+  );
+
+  const { insertId } = data;
+
+  /* 
+  Write a function getRetweet that returns the retweet with the tweet field populated
+  */
+  return insertId;
+}
+
+async function deleteRetweet(author, tweet) {
+  let { data } = await executeQuery(
+    "DELETE FROM `retweet` WHERE user=? AND tweet=?;",
+    [author, tweet]
+  );
+}
+
 module.exports = {
   getTweets,
   getTweetById,
@@ -101,4 +154,7 @@ module.exports = {
   repeatedLike,
   addLike,
   removeLike,
+  repeatedRetweet,
+  postRetweet,
+  deleteRetweet,
 };
