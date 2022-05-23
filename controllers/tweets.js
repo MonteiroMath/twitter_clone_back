@@ -171,7 +171,7 @@ async function retweet(req, res) {
     });
   }
 
-  newRetweet = await postRetweet(userId, twitter.id);
+  newRetweet = await postRetweet(userId, tweet.id);
 
   tweet.retweeted_by.push(userId);
 

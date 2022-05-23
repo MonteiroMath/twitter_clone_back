@@ -1,4 +1,5 @@
 const mysql = require("mysql2/promise");
+const { getTweet } = require("../controllers/tweets");
 
 //get tweet and post tweet
 
@@ -117,13 +118,27 @@ async function getLikes(tweet) {
 
 async function repeatedRetweet(author, tweet) {
   let { data } = await executeQuery(
-    "SELECT EXISTS(SELECT * FROM `retweet` WHERE user=? AND tweet=?)",
+    "SELECT EXISTS(SELECT * FROM `retweets` WHERE user=? AND tweet=?)",
     [author, tweet]
   );
 
   const existenceCode = Object.values(data[0])[0];
 
   return existenceCode === 1;
+}
+
+async function getRetweet(id) {
+  const { data } = await executeQuery("SELECT * FROM `retweets` WHERE id=?", [
+    id,
+  ]);
+
+  const retweet = data[0];
+
+  const originalTweet = await getTweetById(retweet.tweet);
+
+  retweet.tweet = originalTweet;
+
+  return retweet;
 }
 
 async function postRetweet(author, tweet) {
@@ -137,12 +152,12 @@ async function postRetweet(author, tweet) {
   /* 
   Write a function getRetweet that returns the retweet with the tweet field populated
   */
-  return insertId;
+  return getRetweet(insertId);
 }
 
 async function deleteRetweet(author, tweet) {
   let { data } = await executeQuery(
-    "DELETE FROM `retweet` WHERE user=? AND tweet=?;",
+    "DELETE FROM `retweets` WHERE user=? AND tweet=?;",
     [author, tweet]
   );
 }
