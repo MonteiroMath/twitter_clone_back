@@ -22,24 +22,33 @@ async function getTweets(id) {
     [id]
   );
 
-  const tweets = await Promise.all(
-    data.map(async (tweet) => {
-      const likes = await getLikes(tweet.id);
-      tweet.liked_by = likes;
-      tweet.retweeted_by = [];
-      tweet.comment_ids = [];
-      tweet.pollSettings = {
-        choices: ["hi", "ho"],
-        pollLen: {
-          days: 1,
-          hours: 3,
-          minutes: 35,
-        },
-      };
+  //extract as populateLikes()
+  let likes = data.map(async (tweet) => {
+    const likes = await getLikes(tweet.id);
+    tweet.liked_by = likes;
+    tweet.comment_ids = [];
+    tweet.pollSettings = {
+      choices: ["hi", "ho"],
+      pollLen: {
+        days: 1,
+        hours: 3,
+        minutes: 35,
+      },
+    };
 
-      return tweet;
-    })
-  );
+    return tweet;
+  });
+
+  let tweets = await Promise.all(likes);
+
+  //extract as populateRetweets()
+  let retweets = tweets.map(async (tweet) => {
+    const retweets = await getRetweets(tweet.id);
+    tweet.retweeted_by = retweets.map((retweet) => retweet.user);
+    return tweet;
+  });
+
+  tweets = await Promise.all(retweets);
 
   return tweets;
 }
@@ -52,9 +61,10 @@ async function getTweetById(id) {
 
   const tweet = data[0];
   const likes = await getLikes(id);
+  const retweets = await getRetweets(id);
 
   tweet.liked_by = likes;
-  tweet.retweeted_by = [];
+  tweet.retweeted_by = retweets.map((retweet) => retweet.user);
   tweet.comment_ids = [];
   tweet.pollSettings = {
     choices: ["hi", "ho"],
@@ -125,6 +135,15 @@ async function repeatedRetweet(author, tweet) {
   const existenceCode = Object.values(data[0])[0];
 
   return existenceCode === 1;
+}
+
+async function getRetweets(tweetId) {
+  const { data } = await executeQuery(
+    "SELECT * FROM `retweets` WHERE tweet=?",
+    [tweetId]
+  );
+
+  return data;
 }
 
 async function getRetweet(id) {
