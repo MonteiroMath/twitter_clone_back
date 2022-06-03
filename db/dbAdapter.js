@@ -13,6 +13,8 @@ async function executeQuery(query, params) {
 
   const [result, fields] = await con.execute(query, params);
 
+  con.close();
+
   return { data: result };
 }
 
@@ -179,6 +181,7 @@ async function deleteRetweet(author, tweet) {
     "DELETE FROM `retweets` WHERE user=? AND tweet=?;",
     [author, tweet]
   );
+
 }
 
 module.exports = {
