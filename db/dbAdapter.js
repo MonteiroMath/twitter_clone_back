@@ -19,17 +19,38 @@ async function executeQuery(query, params) {
 }
 
 async function getTweets(id) {
+  /*
+
+    - Buscar tweets pelo autor em Tweets
+    - Buscar TweetContent dos tweets
+    - Povoa o TweetContent
+    - Retorna
+
+  */
+
   const { data } = await executeQuery(
-    "SELECT * FROM `twittertest` WHERE author=? ORDER BY id DESC LIMIT 10",
+    "SELECT * FROM `tweets` WHERE author=? ORDER BY id DESC LIMIT 10",
     [id]
   );
 
-  //extract as populateLikes()
-  let likes = data.map(async (tweet) => {
-    const likes = await getLikes(tweet.id);
-    tweet.liked_by = likes;
-    tweet.comment_ids = [];
-    tweet.pollSettings = {
+  let contentPromises = data.map(async (tweet) => {
+    const { data } = await executeQuery(
+      "SELECT * FROM `tweetContent` WHERE id=?",
+      [tweet.content]
+    );
+
+    const tweetContent = data[0];
+
+    //extract as populateLikes()
+    const likes = await getLikes(tweetContent.id);
+    tweetContent.liked_by = likes;
+
+    //extract as populateRetweets()
+    const retweets = await getRetweets(tweetContent.id);
+    tweetContent.retweeted_by = retweets.map((retweet) => retweet.user);
+
+    tweetContent.comment_ids = [];
+    tweetContent.pollSettings = {
       choices: ["hi", "ho"],
       pollLen: {
         days: 1,
@@ -38,21 +59,12 @@ async function getTweets(id) {
       },
     };
 
-    return tweet;
+    return tweetContent;
   });
 
-  let tweets = await Promise.all(likes);
+  let tweetContent = await Promise.all(contentPromises);
 
-  //extract as populateRetweets()
-  let retweets = tweets.map(async (tweet) => {
-    const retweets = await getRetweets(tweet.id);
-    tweet.retweeted_by = retweets.map((retweet) => retweet.user);
-    return tweet;
-  });
-
-  tweets = await Promise.all(retweets);
-
-  return tweets;
+  return { tweets: data, tweetContent };
 }
 
 async function getTweetById(id) {
@@ -81,14 +93,27 @@ async function getTweetById(id) {
 }
 
 async function saveTweet(author, content) {
-  let { data } = await executeQuery(
-    "INSERT INTO `twittertest` (author, message, attach, poll) VALUES(?, ?, ?, ?);",
+  /*
+    - Save Tweet Content
+    - insert ID on tweet table
+    - return both insertions
+  */
+
+  const tweetContent = await executeQuery(
+    "INSERT INTO `tweetContent` (author, message, attach, poll) VALUES(?, ?, ?, ?);",
     [author, content.message, content.attach, content.poll]
   );
 
-  const { insertId } = data;
+  const { insertId } = tweetContent.data;
 
-  return getTweetById(insertId);
+  const tweet = await executeQuery(
+    "INSERT INTO `tweets` (author, content) VALUES(?, ?)",
+    [author, insertId]
+  );
+
+  const tweetId = tweet.data.insertId;
+
+  return getTweetById(tweetId);
 }
 
 async function repeatedLike(author, tweet) {
@@ -181,7 +206,6 @@ async function deleteRetweet(author, tweet) {
     "DELETE FROM `retweets` WHERE user=? AND tweet=?;",
     [author, tweet]
   );
-
 }
 
 module.exports = {
