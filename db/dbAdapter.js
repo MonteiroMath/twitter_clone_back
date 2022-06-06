@@ -17,19 +17,13 @@ async function executeQuery(query, params) {
 }
 
 async function getTweets(id) {
-  /*
-
-    - Povoa o TweetContent
-
-  */
-
-  //Buscar tweets pelo autor em Tweets
+  //Busca tweets pelo autor em Tweets
   const { data } = await executeQuery(
     "SELECT * FROM `tweets` WHERE author=? ORDER BY id DESC LIMIT 10",
     [id]
   );
 
-  //Buscar TweetContent dos tweets
+  //Busca TweetContent dos tweets
   tweetContent = await getTweetContent(data);
 
   return { tweets: data, tweetContent };
@@ -175,7 +169,7 @@ async function repeatedRetweet(author, tweet) {
 
 async function getRetweets(tweetId) {
   const { data } = await executeQuery(
-    "SELECT * FROM `retweets` WHERE tweet=?",
+    "SELECT * FROM `tweets` WHERE content=? AND retweet=1",
     [tweetId]
   );
 
