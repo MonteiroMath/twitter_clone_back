@@ -219,8 +219,9 @@ async function handleLike(req, res) {
   //Includes the userId in the liked_by property of the tweet
   //Responds with the updated tweet as an object
 
-  const { userId, tweet } = req;
+  const { userId, tweetData } = req;
   const { like } = req.body;
+  const { tweet, tweetContent } = tweetData;
 
   if (like == null) {
     return res.status(400).json({
@@ -229,7 +230,7 @@ async function handleLike(req, res) {
     });
   }
 
-  const userAlreadyLikes = await repeatedLike(userId, tweet.id);
+  const userAlreadyLikes = await repeatedLike(userId, tweetContent.id);
 
   if (like && userAlreadyLikes) {
     return res.status(400).json({
@@ -244,16 +245,14 @@ async function handleLike(req, res) {
   }
 
   if (like) {
-    result = await addLike(userId, tweet.id);
-    tweet.liked_by.push(userId);
+    result = await addLike(userId, tweetContent.id);
+    tweetContent.liked_by.push(userId);
   } else {
-    result = await removeLike(userId, tweet.id);
-    tweet.liked_by = tweet.liked_by.filter((id) => id != userId);
+    result = await removeLike(userId, tweetContent.id);
+    tweetContent.liked_by = tweetContent.liked_by.filter((id) => id != userId);
   }
 
-  console.log(tweet);
-
-  res.json({ success: true, tweet });
+  res.json({ success: true, tweetContent });
 }
 
 async function findTweet(req, res, next) {
@@ -261,13 +260,13 @@ async function findTweet(req, res, next) {
   //responds with a 404 error if no tweet is found with the id informed in the url
 
   const { id } = req.params;
-  const tweet = await getTweetById(id);
+  const tweetData = await getTweetById(id);
 
-  if (!tweet) {
+  if (!tweetData.tweet) {
     return sendNotFoundError(res, `Tweet ${id} not found`);
   }
 
-  req.tweet = tweet;
+  req.tweetData = tweetData;
   next();
 }
 
