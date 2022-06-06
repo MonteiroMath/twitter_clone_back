@@ -1,8 +1,6 @@
 const mysql = require("mysql2/promise");
-const { getTweet } = require("../controllers/tweets");
 
 //get tweet and post tweet
-
 async function executeQuery(query, params) {
   const con = await mysql.createConnection({
     host: "localhost",
@@ -21,19 +19,24 @@ async function executeQuery(query, params) {
 async function getTweets(id) {
   /*
 
-    - Buscar tweets pelo autor em Tweets
-    - Buscar TweetContent dos tweets
     - Povoa o TweetContent
-    - Retorna
 
   */
 
+  //Buscar tweets pelo autor em Tweets
   const { data } = await executeQuery(
     "SELECT * FROM `tweets` WHERE author=? ORDER BY id DESC LIMIT 10",
     [id]
   );
 
-  let contentPromises = data.map(async (tweet) => {
+  //Buscar TweetContent dos tweets
+  tweetContent = await getTweetContent(data);
+
+  return { tweets: data, tweetContent };
+}
+
+async function getTweetContent(tweets) {
+  let contentPromises = tweets.map(async (tweet) => {
     const { data } = await executeQuery(
       "SELECT * FROM `tweetContent` WHERE id=?",
       [tweet.content]
@@ -41,15 +44,13 @@ async function getTweets(id) {
 
     const tweetContent = data[0];
 
-    //extract as populateLikes()
-    const likes = await getLikes(tweetContent.id);
-    tweetContent.liked_by = likes;
+    await populateLikes(tweetContent);
+    await populateRetweets(tweetContent);
 
-    //extract as populateRetweets()
-    const retweets = await getRetweets(tweetContent.id);
-    tweetContent.retweeted_by = retweets.map((retweet) => retweet.user);
-
+    //populate comments
     tweetContent.comment_ids = [];
+
+    //populateSettings
     tweetContent.pollSettings = {
       choices: ["hi", "ho"],
       pollLen: {
@@ -62,9 +63,17 @@ async function getTweets(id) {
     return tweetContent;
   });
 
-  let tweetContent = await Promise.all(contentPromises);
+  return Promise.all(contentPromises);
+}
 
-  return { tweets: data, tweetContent };
+async function populateLikes(tweet) {
+  const likes = await getLikes(tweet.id);
+  tweet.liked_by = likes;
+}
+
+async function populateRetweets(tweet) {
+  const retweets = await getRetweets(tweet.id);
+  tweet.retweeted_by = retweets.map((retweet) => retweet.user);
 }
 
 async function getTweetById(id) {
