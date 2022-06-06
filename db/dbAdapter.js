@@ -71,28 +71,13 @@ async function populateRetweets(tweet) {
 }
 
 async function getTweetById(id) {
-  const { data } = await executeQuery(
-    "SELECT * FROM `twittertest` WHERE id=?",
-    [id]
-  );
+  const { data } = await executeQuery("SELECT * FROM `tweets` WHERE id=?", [
+    id,
+  ]);
 
-  const tweet = data[0];
-  const likes = await getLikes(id);
-  const retweets = await getRetweets(id);
+  const tweetContentData = await getTweetContent(data);
 
-  tweet.liked_by = likes;
-  tweet.retweeted_by = retweets.map((retweet) => retweet.user);
-  tweet.comment_ids = [];
-  tweet.pollSettings = {
-    choices: ["hi", "ho"],
-    pollLen: {
-      days: 1,
-      hours: 3,
-      minutes: 35,
-    },
-  };
-
-  return tweet;
+  return { tweet: data[0], tweetContent: tweetContentData[0] };
 }
 
 async function saveTweet(author, content) {

@@ -117,13 +117,17 @@ function sendNotFoundError(res, msg) {
 async function getUserTweets(req, res, next) {
   const { id } = req.params;
 
-  const tweets = await getTweets(id);
+  const tweetData = await getTweets(id);
 
-  if (tweets.length === 0) {
+  if (tweetData.tweets.length === 0) {
     return sendNotFoundError(res, `No tweets found for user ${id}`);
   }
 
-  res.json({ success: true, tweets });
+  res.json({
+    success: true,
+    tweets: tweetData.tweets,
+    tweetContent: tweetData.tweetContent,
+  });
 }
 
 function getTweet(req, res) {
@@ -134,10 +138,6 @@ function getTweet(req, res) {
 }
 
 async function postTweet(req, res, next) {
-  /* get the new tweet content from the body of the requirement. As a placeholder, uses lenght as id.
-FUnction create NewTweet formats the new tweet. Responds with the newly registered tweet as an object.
-*/
-
   const { userId, newTweet } = req.body;
 
   if (!newTweet) {
@@ -148,9 +148,9 @@ FUnction create NewTweet formats the new tweet. Responds with the newly register
   }
 
   try {
-    let tweet = await saveTweet(userId, newTweet);
+    const tweet = await saveTweet(userId, newTweet);
 
-    res.json({ success: true, tweet });
+    res.json({ success: true, ...tweet });
   } catch (err) {
     next(err);
   }
