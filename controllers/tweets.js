@@ -252,7 +252,7 @@ async function handleLike(req, res) {
     tweetContent.liked_by = tweetContent.liked_by.filter((id) => id != userId);
   }
 
-  res.json({ success: true, tweetContent });
+  res.json({ success: true, updatedTweet: tweetContent });
 }
 
 async function findTweet(req, res, next) {
