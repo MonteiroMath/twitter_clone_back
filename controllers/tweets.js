@@ -157,9 +157,6 @@ async function postTweet(req, res, next) {
 }
 
 async function retweet(req, res) {
-  //add the user to the list of retweeters of the tweet. Responds with the updated tweet as an object
-  //Function needs to be improved to effectively include a retweet object into the list of objects
-
   /*
 
     Create a new tweet on the tweets table
@@ -182,15 +179,18 @@ async function retweet(req, res) {
 
   const retweet = await postRetweet(userId, tweetContent.id);
 
+  console.log(retweet);
+
   res.json({ success: true, ...retweet });
 }
 
 async function undoRetweet(req, res) {
   //Remove the user from the list of retweeters. Responds with the updated tweet as an object.
   //Needs to be improved to effectively remove a retweet object from the list of objects
-  const { userId, tweet } = req;
+  const { userId, tweetData } = req;
+  const { tweetContent } = tweetData;
 
-  const userAlreadyRetweeted = await repeatedRetweet(userId, tweet.id);
+  const userAlreadyRetweeted = await repeatedRetweet(userId, tweetContent.id);
 
   if (!userAlreadyRetweeted) {
     return res.status(400).json({
@@ -199,10 +199,12 @@ async function undoRetweet(req, res) {
     });
   }
 
-  await deleteRetweet(userId, tweet.id);
-  tweet.retweeted_by = tweet.retweeted_by.filter((id) => userId !== id);
+  await deleteRetweet(userId, tweetContent.id);
+  tweetContent.retweeted_by = tweetContent.retweeted_by.filter(
+    (id) => userId !== id
+  );
 
-  res.json({ success: true, updatedTweet: tweet });
+  res.json({ success: true, updatedTweet: tweetContent });
 }
 
 function comment(req, res) {

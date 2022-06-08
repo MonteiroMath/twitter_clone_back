@@ -190,10 +190,10 @@ async function postRetweet(author, contentId) {
   return getTweetById(insertId);
 }
 
-async function deleteRetweet(author, tweet) {
+async function deleteRetweet(author, contentId) {
   let { data } = await executeQuery(
-    "DELETE FROM `retweets` WHERE user=? AND tweet=?;",
-    [author, tweet]
+    "DELETE FROM `tweets` WHERE author=? AND content=? AND retweet=1;",
+    [author, contentId]
   );
 }
 
