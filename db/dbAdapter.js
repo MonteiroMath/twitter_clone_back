@@ -67,7 +67,7 @@ async function populateLikes(tweet) {
 
 async function populateRetweets(tweet) {
   const retweets = await getRetweets(tweet.id);
-  tweet.retweeted_by = retweets.map((retweet) => retweet.user);
+  tweet.retweeted_by = retweets.map((retweet) => retweet.author);
 }
 
 async function getTweetById(id) {
@@ -141,10 +141,11 @@ async function getLikes(tweet) {
   return data.map((like) => like.user);
 }
 
-async function repeatedRetweet(author, tweet) {
+async function repeatedRetweet(author, contentId) {
+  console.log(author, contentId);
   let { data } = await executeQuery(
-    "SELECT EXISTS(SELECT * FROM `retweets` WHERE user=? AND tweet=?)",
-    [author, tweet]
+    "SELECT EXISTS(SELECT * FROM `tweets` WHERE author=? AND content=? AND retweet=1)",
+    [author, contentId]
   );
 
   const existenceCode = Object.values(data[0])[0];
@@ -175,10 +176,10 @@ async function getRetweet(id) {
   return retweet;
 }
 
-async function postRetweet(author, tweet) {
+async function postRetweet(author, contentId) {
   let { data } = await executeQuery(
-    "INSERT INTO `retweets` (user, tweet) VALUES(?, ?);",
-    [author, tweet]
+    "INSERT INTO `tweets` (author, retweet, content) VALUES(?, 1, ?);",
+    [author, contentId]
   );
 
   const { insertId } = data;
@@ -186,7 +187,7 @@ async function postRetweet(author, tweet) {
   /* 
   Write a function getRetweet that returns the retweet with the tweet field populated
   */
-  return getRetweet(insertId);
+  return getTweetById(insertId);
 }
 
 async function deleteRetweet(author, tweet) {

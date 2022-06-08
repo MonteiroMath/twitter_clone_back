@@ -160,22 +160,29 @@ async function retweet(req, res) {
   //add the user to the list of retweeters of the tweet. Responds with the updated tweet as an object
   //Function needs to be improved to effectively include a retweet object into the list of objects
 
-  const { userId, tweet } = req;
+  /*
 
-  const userAlreadyRetweeted = await repeatedRetweet(userId, tweet.id);
+    Create a new tweet on the tweets table
+    tweet has the retweeet prop set to 1 and content set to a tweet that already exists
+    return the new tweet
+
+  */
+
+  const { userId, tweetData } = req;
+  const { tweetContent } = tweetData;
+
+  const userAlreadyRetweeted = await repeatedRetweet(userId, tweetContent.id);
 
   if (userAlreadyRetweeted) {
     return res.status(400).json({
       success: false,
-      msg: `User ${userId} already retweet this tweet`,
+      msg: `User ${userId} already retweeted this tweet`,
     });
   }
 
-  newRetweet = await postRetweet(userId, tweet.id);
+  const retweet = await postRetweet(userId, tweetContent.id);
 
-  tweet.retweeted_by.push(userId);
-
-  res.json({ success: true, updatedTweet: tweet, retweet: newRetweet });
+  res.json({ success: true, ...retweet });
 }
 
 async function undoRetweet(req, res) {
@@ -221,7 +228,7 @@ async function handleLike(req, res) {
 
   const { userId, tweetData } = req;
   const { like } = req.body;
-  const { tweet, tweetContent } = tweetData;
+  const { tweetContent } = tweetData;
 
   if (like == null) {
     return res.status(400).json({
