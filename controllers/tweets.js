@@ -212,11 +212,16 @@ function comment(req, res) {
   // Includes the id of the answer into the comment_ids property of the old tweet
   // Responds with both the old tweet, updated, and the answer as objects
 
-  const { tweet } = req;
-  const { newTweet } = req.body;
+  /*
+    Create a new tweet with it's tweet content
+    set content id to the id of the tweetContent commented
+    return tweet and tweetcontent
 
-  let tt_count = tweets_ph.length;
-  let comment = createNewTweet(tt_count + 1, newTweet);
+  */
+
+  const { userId, tweetData } = req;
+  const { tweetContent } = tweetData;
+  const { newTweet } = req.body;
 
   tweets_ph.push(comment);
   tweet.comment_ids.push(comment.id);
@@ -286,7 +291,7 @@ function createNewTweet(id, content) {
       message,
       attach,
       poll,
-      retweet,
+      comment,
       pollSettings
     }
 

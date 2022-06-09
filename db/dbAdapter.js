@@ -86,10 +86,9 @@ async function saveTweet(author, content) {
     - insert ID on tweet table
     - return both insertions
   */
-
   const tweetContent = await executeQuery(
-    "INSERT INTO `tweetContent` (author, message, attach, poll) VALUES(?, ?, ?, ?);",
-    [author, content.message, content.attach, content.poll]
+    "INSERT INTO `tweetContent` (author, message, attach, poll, comment) VALUES(?, ?, ?, ?, ?);",
+    [author, content.message, content.attach, content.poll, content.comment]
   );
 
   const { insertId } = tweetContent.data;

@@ -35,7 +35,6 @@ router.delete("/:id/retweet", verifyUser, findTweet, undoRetweet);
 
 //comment/answer route
 
-router.post("/:id/comment", findTweet, comment);
-
+router.post("/:id/comment", verifyUser, findTweet, comment);
 
 module.exports = router;
