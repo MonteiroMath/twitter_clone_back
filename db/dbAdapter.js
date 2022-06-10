@@ -30,10 +30,14 @@ async function getTweets(id) {
 }
 
 async function getTweetContent(tweets) {
-  let contentPromises = tweets.map(async (tweet) => {
+  const uniqueIdList = Array.from(
+    new Set(tweets.map((tweet) => tweet.content))
+  );
+
+  let contentPromises = uniqueIdList.map(async (id) => {
     const { data } = await executeQuery(
       "SELECT * FROM `tweetContent` WHERE id=?",
-      [tweet.content]
+      [id]
     );
 
     const tweetContent = data[0];
