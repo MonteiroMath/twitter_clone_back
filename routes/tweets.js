@@ -9,6 +9,7 @@ const {
   comment,
   undoRetweet,
   findTweet,
+  getAnswers,
 } = require("../controllers/tweets");
 
 const { verifyUser } = require("../controllers/users");
@@ -20,7 +21,7 @@ router.get("/:id", findTweet, getTweet);
 router.get("/user/:id", getUserTweets);
 
 //get Answers for a tweet
-//router.get("/answers/:parentId", getAnswers);
+router.get("/answers/:parentId", getAnswers);
 
 //Post a new tweet
 router.post("/", postTweet);

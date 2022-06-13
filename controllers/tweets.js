@@ -1,5 +1,6 @@
 const {
   getTweets,
+  getTweetsByParentId,
   getTweetById,
   saveTweet,
   repeatedLike,
@@ -284,6 +285,22 @@ async function findTweet(req, res, next) {
   next();
 }
 
+async function getAnswers(req, res) {
+  const { parentId } = req.params;
+
+  const tweetData = await getTweetsByParentId(parentId);
+
+  if (tweetData.tweets.length === 0) {
+    return sendNotFoundError(res, `No answers found for user ${id}`);
+  }
+
+  res.json({
+    success: true,
+    tweets: tweetData.tweets,
+    tweetContent: tweetData.tweetContent,
+  });
+}
+
 function createNewTweet(id, content) {
   /*
 
@@ -324,4 +341,5 @@ module.exports = {
   comment,
   undoRetweet,
   findTweet,
+  getAnswers,
 };

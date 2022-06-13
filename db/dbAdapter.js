@@ -29,6 +29,18 @@ async function getTweets(id) {
   return { tweets: data, tweetContent };
 }
 
+async function getTweetsByParentId(parentId) {
+  const { data } = await executeQuery(
+    "SELECT * FROM `tweets` WHERE parent=? ORDER BY id DESC LIMIT 10",
+    [parentId]
+  );
+
+  //Busca TweetContent dos tweets
+  tweetContent = await getTweetContent(data);
+
+  return { tweets: data, tweetContent };
+}
+
 async function getTweetContent(tweets) {
   const uniqueIdList = Array.from(
     new Set(tweets.map((tweet) => tweet.content))
@@ -165,20 +177,6 @@ async function getRetweets(tweetId) {
   return data;
 }
 
-async function getRetweet(id) {
-  const { data } = await executeQuery("SELECT * FROM `retweets` WHERE id=?", [
-    id,
-  ]);
-
-  const retweet = data[0];
-
-  const originalTweet = await getTweetById(retweet.tweet);
-
-  retweet.tweet = originalTweet;
-
-  return retweet;
-}
-
 async function postRetweet(author, contentId) {
   let { data } = await executeQuery(
     "INSERT INTO `tweets` (author, retweet, content) VALUES(?, 1, ?);",
@@ -202,6 +200,7 @@ async function deleteRetweet(author, contentId) {
 
 module.exports = {
   getTweets,
+  getTweetsByParentId,
   getTweetById,
   saveTweet,
   repeatedLike,
