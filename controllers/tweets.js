@@ -138,7 +138,7 @@ function getTweet(req, res) {
 }
 
 async function postTweet(req, res, next) {
-  const { userId, newTweet } = req.body;
+  const { userId, newTweet, parentId } = req.body;
 
   if (!newTweet) {
     return res.status(400).json({
@@ -148,7 +148,7 @@ async function postTweet(req, res, next) {
   }
 
   try {
-    const tweet = await saveTweet(userId, newTweet);
+    const tweet = await saveTweet(userId, newTweet, parentId);
 
     res.json({ success: true, ...tweet });
   } catch (err) {

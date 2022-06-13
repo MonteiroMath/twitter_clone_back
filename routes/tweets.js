@@ -19,6 +19,9 @@ router.get("/:id", findTweet, getTweet);
 //get Tweets from a user
 router.get("/user/:id", getUserTweets);
 
+//get Answers for a tweet
+//router.get("/answers/:parentId", getAnswers);
+
 //Post a new tweet
 router.post("/", postTweet);
 

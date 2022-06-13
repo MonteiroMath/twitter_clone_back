@@ -84,7 +84,7 @@ async function getTweetById(id) {
   return { tweet: data[0], tweetContent: tweetContentData[0] };
 }
 
-async function saveTweet(author, content) {
+async function saveTweet(author, content, parentId = null) {
   /*
     - Save Tweet Content
     - insert ID on tweet table
@@ -98,8 +98,8 @@ async function saveTweet(author, content) {
   const { insertId } = tweetContent.data;
 
   const tweet = await executeQuery(
-    "INSERT INTO `tweets` (author, content) VALUES(?, ?)",
-    [author, insertId]
+    "INSERT INTO `tweets` (author, content, parent) VALUES(?, ?, ?)",
+    [author, insertId, parentId]
   );
 
   const tweetId = tweet.data.insertId;
