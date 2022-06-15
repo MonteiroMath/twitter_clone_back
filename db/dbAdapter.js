@@ -30,6 +30,7 @@ async function getTweets(id) {
 }
 
 async function getTweetsByParentId(parentId) {
+  
   const { data } = await executeQuery(
     "SELECT * FROM `tweets` WHERE parent=? ORDER BY id DESC LIMIT 10",
     [parentId]

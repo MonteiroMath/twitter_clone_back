@@ -6,7 +6,6 @@ const {
   postTweet,
   handleLike,
   retweet,
-  comment,
   undoRetweet,
   findTweet,
   getAnswers,
@@ -36,9 +35,5 @@ router.post("/:id/retweet", verifyUser, findTweet, retweet);
 //undo retweet route
 
 router.delete("/:id/retweet", verifyUser, findTweet, undoRetweet);
-
-//comment/answer route
-
-router.post("/:id/comment", verifyUser, findTweet, comment);
 
 module.exports = router;
