@@ -30,7 +30,6 @@ async function getTweets(id) {
 }
 
 async function getTweetsByParentId(parentId) {
-  
   const { data } = await executeQuery(
     "SELECT * FROM `tweets` WHERE parent=? ORDER BY id DESC LIMIT 10",
     [parentId]
@@ -43,38 +42,44 @@ async function getTweetsByParentId(parentId) {
 }
 
 async function getTweetContent(tweets) {
-  const uniqueIdList = Array.from(
-    new Set(tweets.map((tweet) => tweet.content))
-  );
+  //const uniqueIdList = Array.from(
+  //  new Set(tweets.map((tweet) => tweet.content))
+  //);
 
-  let contentPromises = uniqueIdList.map(async (id) => {
-    const { data } = await executeQuery(
-      "SELECT * FROM `tweetContent` WHERE id=?",
-      [id]
-    );
+  const uniqueContent = new Set();
 
-    const tweetContent = data[0];
+  let contentPromises = tweets.map(async ({ id, content }) => {
+    if (!uniqueContent.has(content)) {
+      uniqueContent.add(content);
 
-    await populateLikes(tweetContent);
-    await populateRetweets(tweetContent);
+      const { data } = await executeQuery(
+        "SELECT * FROM `tweetContent` WHERE id=?",
+        [content]
+      );
 
-    //populate comments
-    tweetContent.comment_ids = [];
+      const tweetContent = data[0];
 
-    //populateSettings
-    tweetContent.pollSettings = {
-      choices: ["hi", "ho"],
-      pollLen: {
-        days: 1,
-        hours: 3,
-        minutes: 35,
-      },
-    };
+      await populateLikes(tweetContent);
+      await populateRetweets(tweetContent);
+      await populateComments(tweetContent, id);
 
-    return tweetContent;
+      //populateSettings
+      tweetContent.pollSettings = {
+        choices: ["hi", "ho"],
+        pollLen: {
+          days: 1,
+          hours: 3,
+          minutes: 35,
+        },
+      };
+
+      return tweetContent;
+    }
   });
 
-  return Promise.all(contentPromises);
+  return Promise.all(contentPromises).then((results) => {
+    return results.filter((result) => result !== undefined);
+  });
 }
 
 async function populateLikes(tweet) {
@@ -85,6 +90,11 @@ async function populateLikes(tweet) {
 async function populateRetweets(tweet) {
   const retweets = await getRetweets(tweet.id);
   tweet.retweeted_by = retweets.map((retweet) => retweet.author);
+}
+
+async function populateComments(tweet, tweetId) {
+  const comments = await getComments(tweetId);
+  tweet.comment_ids = comments;
 }
 
 async function getTweetById(id) {
@@ -157,8 +167,15 @@ async function getLikes(tweet) {
   return data.map((like) => like.user);
 }
 
+async function getComments(id) {
+  let { data } = await executeQuery("SELECT * FROM tweets WHERE parent=?", [
+    id,
+  ]);
+
+  return data;
+}
+
 async function repeatedRetweet(author, contentId) {
-  console.log(author, contentId);
   let { data } = await executeQuery(
     "SELECT EXISTS(SELECT * FROM `tweets` WHERE author=? AND content=? AND retweet=1)",
     [author, contentId]
