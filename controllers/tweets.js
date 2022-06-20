@@ -39,7 +39,27 @@ function getTweet(req, res) {
 }
 
 async function postTweet(req, res, next) {
-  const { userId, newTweet, parentId } = req.body;
+  const { userId, newTweet } = req.body;
+
+  if (!newTweet) {
+    return res.status(400).json({
+      success: false,
+      msg: "The content of the new tweet must be sent",
+    });
+  }
+
+  try {
+    const tweet = await saveTweet(userId, newTweet);
+
+    res.json({ success: true, ...tweet });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function postAnswer(req, res, next) {
+  const { parentId } = req.params;
+  const { userId, newTweet } = req.body;
 
   if (!newTweet) {
     return res.status(400).json({
@@ -50,8 +70,10 @@ async function postTweet(req, res, next) {
 
   try {
     const tweet = await saveTweet(userId, newTweet, parentId);
+    console.log(tweet);
+    const updatedTweet = await getTweetById(parentId);
 
-    res.json({ success: true, ...tweet });
+    res.json({ success: true, updatedTweet, ...tweet });
   } catch (err) {
     next(err);
   }
@@ -184,4 +206,5 @@ module.exports = {
   undoRetweet,
   findTweet,
   getAnswers,
+  postAnswer,
 };

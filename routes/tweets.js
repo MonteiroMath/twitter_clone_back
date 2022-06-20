@@ -9,6 +9,7 @@ const {
   undoRetweet,
   findTweet,
   getAnswers,
+  postAnswer,
 } = require("../controllers/tweets");
 
 const { verifyUser } = require("../controllers/users");
@@ -24,6 +25,9 @@ router.get("/answers/:parentId", getAnswers);
 
 //Post a new tweet
 router.post("/", postTweet);
+
+//Post a new answer
+router.post("/answers/:parentId", postAnswer);
 
 //like route
 router.put("/:id/likes", verifyUser, findTweet, handleLike);
