@@ -195,10 +195,10 @@ async function getRetweets(tweetId) {
   return data;
 }
 
-async function postRetweet(author, contentId) {
+async function postRetweet(author, tweetId, contentId) {
   let { data } = await executeQuery(
-    "INSERT INTO `tweets` (author, retweet, content) VALUES(?, 1, ?);",
-    [author, contentId]
+    "INSERT INTO `tweets` (author, retweet, content, original) VALUES(?, 1, ?, ?);",
+    [author, contentId, tweetId]
   );
 
   const { insertId } = data;

@@ -89,7 +89,7 @@ async function retweet(req, res) {
   */
 
   const { userId, tweetData } = req;
-  const { tweetContent } = tweetData;
+  const { tweet, tweetContent } = tweetData;
 
   const userAlreadyRetweeted = await repeatedRetweet(userId, tweetContent.id);
 
@@ -100,9 +100,7 @@ async function retweet(req, res) {
     });
   }
 
-  const retweet = await postRetweet(userId, tweetContent.id);
-
-  console.log(retweet);
+  const retweet = await postRetweet(userId, tweet.id, tweetContent.id);
 
   res.json({ success: true, ...retweet });
 }
