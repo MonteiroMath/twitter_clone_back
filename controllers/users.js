@@ -27,6 +27,7 @@ const users_ph = [
 
 const getUsers = (req, res) => {
   //return the list of users
+
   res.json(users_ph);
 };
 
@@ -37,10 +38,6 @@ const getUser = (req, res) => {
   let { id } = req.params;
 
   let user = findUserById(id);
-
-  if (!user) {
-    return res.status(404).json({ success: false, msg: "User not found" });
-  }
 
   res.json({
     success: true,
@@ -53,20 +50,11 @@ function verifyUser(req, res, next) {
   //responds with an error if negative. Adds the id to the userId property of the request if positive.
 
   const { userId } = req.body;
-
   if (!userId) {
-    return res
-      .status(400)
-      .json({ sucess: false, msg: "The user id must be informed" });
+    throw new Error("The user id must be informed");
   }
 
-  const user = findUserById(userId);
-
-  if (!user) {
-    return res
-      .status(404)
-      .json({ sucess: false, msg: `The user ${userId} was not found` });
-  }
+  findUserById(userId);
 
   req.userId = parseInt(userId);
 
@@ -74,7 +62,13 @@ function verifyUser(req, res, next) {
 }
 
 function findUserById(id) {
-  return users_ph.find((user) => user.id === parseInt(id));
+  const user = users_ph.find((user) => user.id === parseInt(id));
+
+  if (!user) {
+    throw new Error(`User ${id} not found`);
+  }
+
+  return user;
 }
 
 module.exports = {
