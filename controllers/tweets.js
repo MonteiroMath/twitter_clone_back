@@ -11,24 +11,18 @@ const {
   deleteRetweet,
 } = require("../db/dbAdapter");
 
-function sendNotFoundError(res, msg) {
-  return res.status(404).json({ success: false, msg });
-}
-
-async function getUserTweets(req, res, next) {
+function getUserTweets(req, res, next) {
   const { id } = req.params;
 
-  const tweetData = await getTweets(id);
-
-  if (tweetData.tweets.length === 0) {
-    return sendNotFoundError(res, `No tweets found for user ${id}`);
-  }
-
-  res.json({
-    success: true,
-    tweets: tweetData.tweets,
-    tweetContent: tweetData.tweetContent,
-  });
+  getTweets(id)
+    .then((tweetData) => {
+      res.json({
+        success: true,
+        tweets: tweetData.tweets,
+        tweetContent: tweetData.tweetContent,
+      });
+    })
+    .catch(next);
 }
 
 function getTweet(req, res) {
@@ -176,22 +170,24 @@ function findTweet(req, res, next) {
 
   getTweetById(id)
     .then((tweetData) => {
-      req.tweetData = tweetData;
+      req.tweet = tweetData;
       next();
     })
     .catch(next);
 }
 
-async function getAnswers(req, res) {
+function getAnswers(req, res, next) {
   const { parentId } = req.params;
 
-  const tweetData = await getTweetsByParentId(parentId);
-
-  res.json({
-    success: true,
-    tweets: tweetData.tweets,
-    tweetContent: tweetData.tweetContent,
-  });
+  getTweetsByParentId(parentId)
+    .then((tweetData) =>
+      res.json({
+        success: true,
+        tweets: tweetData.tweets,
+        tweetContent: tweetData.tweetContent,
+      })
+    )
+    .catch(next);
 }
 
 module.exports = {

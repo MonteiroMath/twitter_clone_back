@@ -23,6 +23,10 @@ async function getTweets(id) {
     [id]
   );
 
+  if (data.length === 0) {
+    throw new Error(`Found no tweets for user ${id}`);
+  }
+
   //Busca TweetContent dos tweets
   tweetContent = await getTweetContent(data);
 
@@ -34,6 +38,10 @@ async function getTweetsByParentId(parentId) {
     "SELECT * FROM `tweets` WHERE parent=? ORDER BY id DESC LIMIT 10",
     [parentId]
   );
+
+  if (data.length === 0) {
+    throw new Error(`No answers found for tweet ${parentId}`);
+  }
 
   //Busca TweetContent dos tweets
   tweetContent = await getTweetContent(data);
