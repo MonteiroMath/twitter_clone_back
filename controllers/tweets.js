@@ -44,26 +44,25 @@ function postTweet(req, res, next) {
     .catch(next);
 }
 
-async function postAnswer(req, res, next) {
+function postAnswer(req, res, next) {
   const { parentId } = req.params;
   const { userId, newTweet } = req.body;
 
-  if (!newTweet) {
-    return res.status(400).json({
-      success: false,
-      msg: "The content of the new tweet must be sent",
-    });
+  if (!newTweet || !userId) {
+    throw new Error("Request missing mandatory parameters");
   }
 
-  try {
-    const tweet = await saveTweet(userId, newTweet, parentId);
-    console.log(tweet);
-    const updatedTweet = await getTweetById(parentId);
+  const saveTweetPromise = saveTweet(userId, newTweet, parentId);
 
-    res.json({ success: true, updatedTweet, ...tweet });
-  } catch (err) {
-    next(err);
-  }
+  const updateTweetPromise = saveTweetPromise.then(() =>
+    getTweetById(parentId)
+  );
+
+  Promise.all([saveTweetPromise, updateTweetPromise])
+    .then(([tweet, updatedTweet]) =>
+      res.json({ success: true, updatedTweet, ...tweet })
+    )
+    .catch(next);
 }
 
 async function retweet(req, res) {
