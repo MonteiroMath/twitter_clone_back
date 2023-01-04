@@ -35,7 +35,7 @@ function getTweet(req, res) {
   //return a tweet made by an user. Searching work is done my the middleware findTweet. Responds with an object that contains the tweet
 
   const { tweet } = req;
-  res.json(tweet);
+  res.json({ success: true, tweet });
 }
 
 async function postTweet(req, res, next) {
@@ -168,19 +168,18 @@ async function handleLike(req, res) {
   res.json({ success: true, updatedTweet: tweetContent });
 }
 
-async function findTweet(req, res, next) {
+function findTweet(req, res, next) {
   //middleware to find a tweet. Adds it to the tweet property of the req.
   //responds with a 404 error if no tweet is found with the id informed in the url
 
   const { id } = req.params;
-  const tweetData = await getTweetById(id);
 
-  if (!tweetData.tweet) {
-    return sendNotFoundError(res, `Tweet ${id} not found`);
-  }
-
-  req.tweetData = tweetData;
-  next();
+  getTweetById(id)
+    .then((tweetData) => {
+      req.tweetData = tweetData;
+      next();
+    })
+    .catch(next);
 }
 
 async function getAnswers(req, res) {

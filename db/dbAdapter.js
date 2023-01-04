@@ -57,6 +57,10 @@ async function getTweetContent(tweets) {
         [content]
       );
 
+      if (data.length === 0) {
+        throw Error(`Content not found for tweet ${id}`);
+      }
+
       const tweetContent = data[0];
 
       await populateLikes(tweetContent);
@@ -101,6 +105,10 @@ async function getTweetById(id) {
   const { data } = await executeQuery("SELECT * FROM `tweets` WHERE id=?", [
     id,
   ]);
+
+  if (data.length === 0) {
+    throw Error(`Tweet ${id} not found`);
+  }
 
   const tweetContentData = await getTweetContent(data);
 
