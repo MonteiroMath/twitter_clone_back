@@ -114,44 +114,48 @@ async function undoRetweet(req, res) {
   res.json({ success: true, updatedTweet: tweetContent });
 }
 
-async function handleLike(req, res) {
+function handleLike(req, res, next) {
   //Includes the userId in the liked_by property of the tweet
   //Responds with the updated tweet as an object
 
-  const { userId, tweetData } = req;
   const { like } = req.body;
-  const { tweetContent } = tweetData;
+  const { userId, tweet } = req;
+  const { tweetContent } = tweet;
 
   if (like == null) {
-    return res.status(400).json({
-      success: false,
-      msg: "A value must be informed for like",
-    });
+    throw new Error("A value must be informed for like");
   }
 
-  const userAlreadyLikes = await repeatedLike(userId, tweetContent.id);
+  repeatedLike(userId, tweetContent.id)
+    .then((isLiked) => {
+      return like
+        ? removeLikePh(userId, tweetContent, isLiked)
+        : addLikePh(userId, tweetContent, isLiked);
+    })
+    .then(() => {
+      res.json({ success: true, updatedTweet: tweetContent });
+    })
+    .catch(next);
+}
 
-  if (like && userAlreadyLikes) {
-    return res.status(400).json({
-      success: false,
-      msg: `User ${userId} has already liked this tweet`,
-    });
-  } else if (!like && !userAlreadyLikes) {
-    return res.status(400).json({
-      success: false,
-      msg: `User ${userId} has not liked this tweet`,
-    });
+function addLikePh(userId, tweetContent, isLiked) {
+  if (isLiked) {
+    throw new Error(`User ${userId} has already liked this tweet`);
   }
 
-  if (like) {
-    result = await addLike(userId, tweetContent.id);
+  return addLike(userId, tweetContent.id).then(() => {
     tweetContent.liked_by.push(userId);
-  } else {
-    result = await removeLike(userId, tweetContent.id);
-    tweetContent.liked_by = tweetContent.liked_by.filter((id) => id != userId);
+  });
+}
+
+function removeLikePh(userId, tweetContent, isLiked) {
+  if (!isLiked) {
+    throw new Error(`User ${userId} has not liked this tweet`);
   }
 
-  res.json({ success: true, updatedTweet: tweetContent });
+  return removeLike(userId, tweetContent.id).then(() => {
+    tweetContent.liked_by = tweetContent.liked_by.filter((id) => id != userId);
+  });
 }
 
 function findTweet(req, res, next) {
