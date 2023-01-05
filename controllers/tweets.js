@@ -1,20 +1,10 @@
-const {
-  getTweets,
-  getTweetsByParentId,
-  getTweetById,
-  saveTweet,
-  repeatedLike,
-  addLike,
-  removeLike,
-  repeatedRetweet,
-  postRetweet,
-  deleteRetweet,
-} = require("../db/dbAdapter");
+const dbAdapter = require("../db/dbAdapter");
 
 function getUserTweets(req, res, next) {
   const { id } = req.params;
 
-  getTweets(id)
+  dbAdapter
+    .getTweets(id)
     .then((tweetData) => {
       res.json({
         success: true,
@@ -39,7 +29,8 @@ function postTweet(req, res, next) {
     throw new Error("Request missing mandatory parameters");
   }
 
-  saveTweet(userId, newTweet)
+  dbAdapter
+    .saveTweet(userId, newTweet)
     .then((tweet) => res.json({ success: true, ...tweet }))
     .catch(next);
 }
@@ -52,10 +43,10 @@ function postAnswer(req, res, next) {
     throw new Error("Request missing mandatory parameters");
   }
 
-  const saveTweetPromise = saveTweet(userId, newTweet, parentId);
+  const saveTweetPromise = dbAdapter.saveTweet(userId, newTweet, parentId);
 
   const updateTweetPromise = saveTweetPromise.then(() =>
-    getTweetById(parentId)
+    dbAdapter.getTweetById(parentId)
   );
 
   Promise.all([saveTweetPromise, updateTweetPromise])
@@ -77,7 +68,10 @@ async function retweet(req, res) {
   const { userId, tweetData } = req;
   const { tweet, tweetContent } = tweetData;
 
-  const userAlreadyRetweeted = await repeatedRetweet(userId, tweetContent.id);
+  const userAlreadyRetweeted = await dbAdapter.repeatedRetweet(
+    userId,
+    tweetContent.id
+  );
 
   if (userAlreadyRetweeted) {
     return res.status(400).json({
@@ -86,7 +80,11 @@ async function retweet(req, res) {
     });
   }
 
-  const retweet = await postRetweet(userId, tweet.id, tweetContent.id);
+  const retweet = await dbAdapter.postRetweet(
+    userId,
+    tweet.id,
+    tweetContent.id
+  );
 
   res.json({ success: true, ...retweet });
 }
@@ -97,7 +95,10 @@ async function undoRetweet(req, res) {
   const { userId, tweetData } = req;
   const { tweetContent } = tweetData;
 
-  const userAlreadyRetweeted = await repeatedRetweet(userId, tweetContent.id);
+  const userAlreadyRetweeted = await dbAdapter.repeatedRetweet(
+    userId,
+    tweetContent.id
+  );
 
   if (!userAlreadyRetweeted) {
     return res.status(400).json({
@@ -106,7 +107,7 @@ async function undoRetweet(req, res) {
     });
   }
 
-  await deleteRetweet(userId, tweetContent.id);
+  await dbAdapter.deleteRetweet(userId, tweetContent.id);
   tweetContent.retweeted_by = tweetContent.retweeted_by.filter(
     (id) => userId !== id
   );
@@ -126,11 +127,12 @@ function handleLike(req, res, next) {
     throw new Error("A value must be informed for like");
   }
 
-  repeatedLike(userId, tweetContent.id)
+  dbAdapter
+    .repeatedLike(userId, tweetContent.id)
     .then((isLiked) => {
       return like
-        ? removeLikePh(userId, tweetContent, isLiked)
-        : addLikePh(userId, tweetContent, isLiked);
+        ? removeLike(userId, tweetContent, isLiked)
+        : addLike(userId, tweetContent, isLiked);
     })
     .then(() => {
       res.json({ success: true, updatedTweet: tweetContent });
@@ -138,22 +140,22 @@ function handleLike(req, res, next) {
     .catch(next);
 }
 
-function addLikePh(userId, tweetContent, isLiked) {
+function addLike(userId, tweetContent, isLiked) {
   if (isLiked) {
     throw new Error(`User ${userId} has already liked this tweet`);
   }
 
-  return addLike(userId, tweetContent.id).then(() => {
+  return dbAdapter.addLike(userId, tweetContent.id).then(() => {
     tweetContent.liked_by.push(userId);
   });
 }
 
-function removeLikePh(userId, tweetContent, isLiked) {
+function removeLike(userId, tweetContent, isLiked) {
   if (!isLiked) {
     throw new Error(`User ${userId} has not liked this tweet`);
   }
 
-  return removeLike(userId, tweetContent.id).then(() => {
+  return dbAdapter.removeLike(userId, tweetContent.id).then(() => {
     tweetContent.liked_by = tweetContent.liked_by.filter((id) => id != userId);
   });
 }
@@ -164,7 +166,7 @@ function findTweet(req, res, next) {
 
   const { id } = req.params;
 
-  getTweetById(id)
+  dbAdapter.getTweetById(id)
     .then((tweetData) => {
       req.tweet = tweetData;
       next();
@@ -175,7 +177,7 @@ function findTweet(req, res, next) {
 function getAnswers(req, res, next) {
   const { parentId } = req.params;
 
-  getTweetsByParentId(parentId)
+  dbAdapter.getTweetsByParentId(parentId)
     .then((tweetData) =>
       res.json({
         success: true,
