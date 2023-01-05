@@ -18,8 +18,8 @@ function getUserTweets(req, res, next) {
 function getTweet(req, res) {
   //return a tweet made by an user. Searching work is done my the middleware findTweet. Responds with an object that contains the tweet
 
-  const { tweet } = req;
-  res.json({ success: true, tweet });
+  const { tweetData } = req;
+  res.json({ success: true, tweet: tweetData });
 }
 
 function postTweet(req, res, next) {
@@ -56,63 +56,54 @@ function postAnswer(req, res, next) {
     .catch(next);
 }
 
-async function retweet(req, res) {
+function retweet(req, res, next) {
   /*
-
     Create a new tweet on the tweets table
     tweet has the retweeet prop set to 1 and content set to a tweet that already exists
     return the new tweet
-
   */
 
   const { userId, tweetData } = req;
   const { tweet, tweetContent } = tweetData;
 
-  const userAlreadyRetweeted = await dbAdapter.repeatedRetweet(
-    userId,
-    tweetContent.id
-  );
+  dbAdapter
+    .repeatedRetweet(userId, tweetContent.id)
+    .then((isRetweeted) => {
+      if (isRetweeted) {
+        throw new Error(`User ${userId} already retweeted this tweet`);
+      }
 
-  if (userAlreadyRetweeted) {
-    return res.status(400).json({
-      success: false,
-      msg: `User ${userId} already retweeted this tweet`,
-    });
-  }
-
-  const retweet = await dbAdapter.postRetweet(
-    userId,
-    tweet.id,
-    tweetContent.id
-  );
-
-  res.json({ success: true, ...retweet });
+      return dbAdapter.postRetweet(userId, tweet.id, tweetContent.id);
+    })
+    .then((retweet) => {
+      res.json({ success: true, ...retweet });
+    })
+    .catch(next);
 }
 
-async function undoRetweet(req, res) {
+function undoRetweet(req, res, next) {
   //Remove the user from the list of retweeters. Responds with the updated tweet as an object.
   //Needs to be improved to effectively remove a retweet object from the list of objects
   const { userId, tweetData } = req;
   const { tweetContent } = tweetData;
 
-  const userAlreadyRetweeted = await dbAdapter.repeatedRetweet(
-    userId,
-    tweetContent.id
-  );
+  dbAdapter
+    .repeatedRetweet(userId, tweetContent.id)
+    .then((isRetweeted) => {
+      if (!isRetweeted) {
+        throw new Error(`User ${userId} has not retweeted this tweet`);
+      }
 
-  if (!userAlreadyRetweeted) {
-    return res.status(400).json({
-      success: false,
-      msg: `User ${userId} has not retweeted this tweet`,
-    });
-  }
+      return dbAdapter.deleteRetweet(userId, tweetContent.id);
+    })
+    .then(() => {
+      tweetContent.retweeted_by = tweetContent.retweeted_by.filter(
+        (id) => userId !== id
+      );
 
-  await dbAdapter.deleteRetweet(userId, tweetContent.id);
-  tweetContent.retweeted_by = tweetContent.retweeted_by.filter(
-    (id) => userId !== id
-  );
-
-  res.json({ success: true, updatedTweet: tweetContent });
+      res.json({ success: true, updatedTweet: tweetContent });
+    })
+    .catch(next);
 }
 
 function handleLike(req, res, next) {
@@ -120,8 +111,8 @@ function handleLike(req, res, next) {
   //Responds with the updated tweet as an object
 
   const { like } = req.body;
-  const { userId, tweet } = req;
-  const { tweetContent } = tweet;
+  const { userId, tweetData } = req;
+  const { tweetContent } = tweetData;
 
   if (like == null) {
     throw new Error("A value must be informed for like");
@@ -166,9 +157,10 @@ function findTweet(req, res, next) {
 
   const { id } = req.params;
 
-  dbAdapter.getTweetById(id)
+  dbAdapter
+    .getTweetById(id)
     .then((tweetData) => {
-      req.tweet = tweetData;
+      req.tweetData = tweetData;
       next();
     })
     .catch(next);
@@ -177,7 +169,8 @@ function findTweet(req, res, next) {
 function getAnswers(req, res, next) {
   const { parentId } = req.params;
 
-  dbAdapter.getTweetsByParentId(parentId)
+  dbAdapter
+    .getTweetsByParentId(parentId)
     .then((tweetData) =>
       res.json({
         success: true,
