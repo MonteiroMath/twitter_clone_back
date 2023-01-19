@@ -1,3 +1,15 @@
+const Sequelize = require("sequelize");
+
+const sequelize = new Sequelize(
+  "twitter",
+  process.env.DBUSER,
+  process.env.PASSWORD,
+  {
+    dialect: "mysql",
+    host: "localhost",
+  }
+);
+
 const mysql = require("mysql2/promise");
 
 //get tweet and post tweet
@@ -233,6 +245,7 @@ async function deleteRetweet(author, contentId) {
 }
 
 module.exports = {
+  sequelize,
   getTweets,
   getTweetsByParentId,
   getTweetById,
