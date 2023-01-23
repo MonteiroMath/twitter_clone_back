@@ -63,7 +63,7 @@ const Tweet = sequelize.define("tweet", {
 
 //Represents the association a tweet has with another one when it is not of type simple
 Tweet.hasOne(Tweet, {
-  foreignKey: "ref",
+  as: "reference",
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
