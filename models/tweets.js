@@ -67,3 +67,5 @@ Tweet.hasOne(Tweet, {
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
+
+module.exports = Tweet;
