@@ -4,8 +4,6 @@ const { sequelize } = require("../db/dbAdapter");
 /*
 
 Todo:
- - set association with itself
- - set validations
   - Types
     - simple for a simple tweet
     - retweet for a tweet without a mesage
@@ -23,11 +21,36 @@ const Tweet = sequelize.define("tweet", {
   },
   message: {
     type: DataTypes.STRING(280),
+    validate: {
+      emptyMessageForRetweet(value) {
+        if (this.type === "retweet" && value.length !== 0)
+          throw new Error("Message must be empty for retweets");
+      },
+      filledMessage(value) {
+        if (this.type !== "retweet" && value.length == 0)
+          throw new Error("Message cannot be empty unless it is a retweet");
+      },
+    },
   },
   attachment: {
     type: DataTypes.STRING(100),
+    validate: {
+      noAttachmentForRetweets(value) {
+        if (this.type === "retweet" && value !== null)
+          throw new Error("Retweets cannot have attachments");
+      },
+    },
   },
-  poll: { type: DataTypes.BOOLEAN, defaultValue: false },
+  poll: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    validate: {
+      noPollsForRetweets(value) {
+        if (this.type === "retweet" && value !== false)
+          throw new Error("Retweets cannot have polls");
+      },
+    },
+  },
   type: {
     type: DataTypes.STRING,
     defaultValue: "simple",
@@ -36,4 +59,11 @@ const Tweet = sequelize.define("tweet", {
       msg: "Type must have a valid value [simples, retweet, comment or answer]",
     },
   },
+});
+
+//Represents the association a tweet has with another one when it is not of type simple
+Tweet.hasOne(Tweet, {
+  foreignKey: "ref",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
 });
