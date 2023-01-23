@@ -1,7 +1,7 @@
 const Sequelize = require("sequelize");
 
 const sequelize = new Sequelize(
-  "twitter",
+  "twitterSqlize",
   process.env.DBUSER,
   process.env.PASSWORD,
   {
