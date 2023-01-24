@@ -1,13 +1,7 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbAdapter");
 
-/*
-  todo: 
-    -add association with tweets (1-n for posts, n-n to likes)
-      - will need a table for likes (n-n association)
-    -add association to itself (follows)
-      - will need a table for follows (n-n association)
-*/
+const Tweet = require("./tweets");
 
 const User = sequelize.define("user", {
   id: {
@@ -57,5 +51,11 @@ const User = sequelize.define("user", {
     type: DataTypes.STRING(100),
   },
 });
+
+User.hasMany(Tweet, {
+  onDelete: "CASCADE",
+  foreignKey: "author",
+});
+Tweet.belongsToOne(User);
 
 module.exports = User;
