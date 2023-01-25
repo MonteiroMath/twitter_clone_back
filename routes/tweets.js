@@ -12,6 +12,8 @@ const {
   postAnswer,
 } = require("../controllers/tweets");
 
+const Tweet = require("../models/tweets");
+
 const { verifyUser } = require("../controllers/users");
 
 //get a Tweet by id

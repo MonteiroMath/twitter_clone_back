@@ -1,4 +1,5 @@
 const { Sequelize, DataTypes } = require("sequelize");
+const validator = require("validator");
 const { sequelize } = require("../db/dbAdapter");
 
 const Tweet = require("./tweets");
@@ -29,19 +30,27 @@ const User = sequelize.define("user", {
   description: {
     type: DataTypes.STRING,
     allowNull: false,
+    defaultValue: "",
   },
   webpage: {
     type: DataTypes.STRING,
     allowNull: false,
+    defaultValue: "",
     validate: {
-      isUrl: true,
+      verifyUrl(value) {
+        if (value.length !== 0 && !validator.isURL(value))
+          throw new Error("Invalid Url informed for webpage.");
+      },
     },
   },
   birthDate: {
     type: DataTypes.DATE,
     allowNull: false,
     validate: {
-      isAfter: "1900-01-01",
+      isAfter: {
+        args: "1900-01-01",
+        msg: "Birth date must be posterior to 1900-01-01",
+      },
     },
   },
   avatar: {
@@ -56,6 +65,6 @@ User.hasMany(Tweet, {
   onDelete: "CASCADE",
   foreignKey: "author",
 });
-Tweet.belongsToOne(User);
+Tweet.belongsTo(User);
 
 module.exports = User;

@@ -5,6 +5,8 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 require("dotenv").config();
 
+const User = require("./models/users");
+
 const usersRouter = require("./routes/users");
 const tweetsRouter = require("./routes/tweets");
 

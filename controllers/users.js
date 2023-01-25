@@ -25,10 +25,23 @@ const users_ph = [
   },
 ];
 
+const User = require("../models/users");
+
 const getUsers = (req, res) => {
   //return the list of users
 
-  res.json(users_ph);
+  User.findAll().then((users) => res.json({ success: true, users }));
+};
+
+const createUser = (req, res, next) => {
+  const { username, email, password, birthDate, webpage } = req.body;
+
+  if (!username || !email || !password || !birthDate)
+    throw new Error("Invalid request - User data must be informed");
+
+  User.create({ username, email, password, birthDate, webpage })
+    .then((user) => res.json({ success: true, user }))
+    .catch(next);
 };
 
 const getUser = (req, res) => {
@@ -37,11 +50,11 @@ const getUser = (req, res) => {
 
   let { id } = req.params;
 
-  let user = findUserById(id);
-
-  res.json({
-    success: true,
-    user,
+  User.findByPk(id).then((user) => {
+    res.json({
+      success: true,
+      user,
+    });
   });
 };
 
@@ -54,25 +67,17 @@ function verifyUser(req, res, next) {
     throw new Error("The user id must be informed");
   }
 
-  findUserById(userId);
+  User.findByPk(userId).then((user) => {
+    if (!user) throw new Error(`User ${id} not found`);
 
-  req.userId = parseInt(userId);
-
-  next();
-}
-
-function findUserById(id) {
-  const user = users_ph.find((user) => user.id === parseInt(id));
-
-  if (!user) {
-    throw new Error(`User ${id} not found`);
-  }
-
-  return user;
+    req.userId = parseInt(userId);
+    next();
+  });
 }
 
 module.exports = {
   getUsers,
   getUser,
+  createUser,
   verifyUser,
 };
