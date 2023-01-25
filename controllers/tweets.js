@@ -166,18 +166,22 @@ function findTweet(req, res, next) {
     .catch(next);
 }
 
+//Require testing
 function getAnswers(req, res, next) {
   const { parentId } = req.params;
 
-  dbAdapter
-    .getTweetsByParentId(parentId)
-    .then((tweetData) =>
+  Tweet.findAll({
+    where: {
+      referenceId: parentId,
+      type: "answer",
+    },
+  })
+    .then((tweets) => {
       res.json({
         success: true,
-        tweets: tweetData.tweets,
-        tweetContent: tweetData.tweetContent,
-      })
-    )
+        tweets,
+      });
+    })
     .catch(next);
 }
 

@@ -13,7 +13,7 @@ const {
 
 const Tweet = require("../models/tweets");
 
-const { verifyUser, findUser } = require("../controllers/users");
+const { verifyUser } = require("../controllers/users");
 
 //get a Tweet by id
 router.get("/:id", findTweet, getTweet);
