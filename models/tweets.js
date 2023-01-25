@@ -61,6 +61,7 @@ const Tweet = sequelize.define("tweet", {
   },
 });
 
+
 //Represents the association a tweet has with another one when it is not of type simple
 Tweet.hasOne(Tweet, {
   as: "reference",

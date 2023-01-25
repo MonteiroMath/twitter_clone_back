@@ -45,8 +45,8 @@ const createUser = (req, res, next) => {
 };
 
 const getUser = (req, res) => {
-  //gets an user by the id parameter of the ui
-  // return an object containing said user
+  //gets an user by the id parameter
+  // return an object to the client containing said user
 
   let { id } = req.params;
 
@@ -56,6 +56,22 @@ const getUser = (req, res) => {
       user,
     });
   });
+};
+
+const findUser = (req, res, next) => {
+  //find an user by the userId parameter
+  //set said user on the req and pass execution to the next middleware
+
+  let { id } = req.params;
+
+  User.findByPk(id)
+    .then((user) => {
+      if (!user) throw new Error(`User ${id} not found`);
+
+      req.user = user;
+      next();
+    })
+    .catch(next);
 };
 
 function verifyUser(req, res, next) {
@@ -78,6 +94,7 @@ function verifyUser(req, res, next) {
 module.exports = {
   getUsers,
   getUser,
+  findUser,
   createUser,
   verifyUser,
 };

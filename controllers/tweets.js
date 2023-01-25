@@ -1,15 +1,16 @@
 const dbAdapter = require("../db/dbAdapter");
 
-function getUserTweets(req, res, next) {
-  const { id } = req.params;
+const Tweet = require("../models/tweets");
 
-  dbAdapter
-    .getTweets(id)
-    .then((tweetData) => {
+function getTweetsByUser(req, res, next) {
+  const { user } = req;
+
+  user
+    .getTweets()
+    .then((tweets) => {
       res.json({
         success: true,
-        tweets: tweetData.tweets,
-        tweetContent: tweetData.tweetContent,
+        tweets,
       });
     })
     .catch(next);
@@ -18,8 +19,8 @@ function getUserTweets(req, res, next) {
 function getTweet(req, res) {
   //return a tweet made by an user. Searching work is done my the middleware findTweet. Responds with an object that contains the tweet
 
-  const { tweetData } = req;
-  res.json({ success: true, tweet: tweetData });
+  const { tweet } = req;
+  res.json({ success: true, tweet });
 }
 
 function postTweet(req, res, next) {
@@ -157,10 +158,9 @@ function findTweet(req, res, next) {
 
   const { id } = req.params;
 
-  dbAdapter
-    .getTweetById(id)
-    .then((tweetData) => {
-      req.tweetData = tweetData;
+  Tweet.findByPk(id)
+    .then((tweet) => {
+      req.tweet = tweet;
       next();
     })
     .catch(next);
@@ -182,7 +182,7 @@ function getAnswers(req, res, next) {
 }
 
 module.exports = {
-  getUserTweets,
+  getTweetsByUser,
   getTweet,
   postTweet,
   handleLike,

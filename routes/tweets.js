@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const {
-  getUserTweets,
   getTweet,
   postTweet,
   handleLike,
@@ -14,13 +13,10 @@ const {
 
 const Tweet = require("../models/tweets");
 
-const { verifyUser } = require("../controllers/users");
+const { verifyUser, findUser } = require("../controllers/users");
 
 //get a Tweet by id
 router.get("/:id", findTweet, getTweet);
-
-//get Tweets from a user
-router.get("/user/:id", getUserTweets);
 
 //get Answers for a tweet
 router.get("/answers/:parentId", getAnswers);
