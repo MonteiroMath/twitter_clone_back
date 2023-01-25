@@ -55,12 +55,13 @@ const Tweet = sequelize.define("tweet", {
     type: DataTypes.STRING,
     defaultValue: "simple",
     validate: {
-      isIn: [["simple", "retweet", "comment", "answer"]],
-      msg: "Type must have a valid value [simples, retweet, comment or answer]",
+      isIn: {
+        args: [["simple", "retweet", "comment", "answer"]],
+        msg: "Type must have a valid value [simples, retweet, comment or answer]",
+      },
     },
   },
 });
-
 
 //Represents the association a tweet has with another one when it is not of type simple
 Tweet.hasOne(Tweet, {

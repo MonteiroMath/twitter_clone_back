@@ -1,30 +1,3 @@
-const users_ph = [
-  {
-    id: 1,
-    username: "Timóteo",
-    description: "This is a description",
-    webpage: "https://github.com/",
-    joined: new Date(),
-    birth: "28/05/1992",
-    avatar: "",
-    background: "",
-    following: [""],
-    followers: [""],
-  },
-  {
-    id: 3,
-    username: "Alfredo",
-    description: "This is a description",
-    webpage: "https://github.com/",
-    joined: new Date(),
-    birth: "28/05/1992",
-    avatar: "",
-    background: "",
-    following: [""],
-    followers: [""],
-  },
-];
-
 const User = require("../models/users");
 
 const getUsers = (req, res) => {
@@ -62,7 +35,7 @@ const findUser = (req, res, next) => {
   //find an user by the userId parameter
   //set said user on the req and pass execution to the next middleware
 
-  let { id } = req.params;
+  const { id } = req.params;
 
   User.findByPk(id)
     .then((user) => {

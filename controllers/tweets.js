@@ -1,5 +1,6 @@
 const dbAdapter = require("../db/dbAdapter");
 
+const User = require("../models/users");
 const Tweet = require("../models/tweets");
 
 function getTweetsByUser(req, res, next) {
@@ -25,14 +26,26 @@ function getTweet(req, res) {
 
 function postTweet(req, res, next) {
   const { userId, newTweet } = req.body;
-
   if (!newTweet || !userId) {
     throw new Error("Request missing mandatory parameters");
   }
 
-  dbAdapter
-    .saveTweet(userId, newTweet)
-    .then((tweet) => res.json({ success: true, ...tweet }))
+  const { message, attachment, poll } = newTweet;
+
+  User.findByPk(userId)
+    .then((user) => {
+      if (!user) throw new Error(`User ${userId} not found`);
+
+      return user.createTweet({
+        message,
+        attachment,
+        poll,
+      });
+    })
+    .then((result) => {
+      const { dataValues } = result;
+      res.json({ success: true, tweet: dataValues });
+    })
     .catch(next);
 }
 
