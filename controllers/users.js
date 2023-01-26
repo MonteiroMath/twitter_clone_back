@@ -53,7 +53,6 @@ const parseUserFromBody = (req, res, next) => {
   User.findByPk(userId)
     .then((user) => {
       if (!user) throw new Error(`User ${userId} not found`);
-
       req.user = user;
       next();
     })

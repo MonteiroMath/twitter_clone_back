@@ -2,6 +2,7 @@ const dbAdapter = require("../db/dbAdapter");
 
 const User = require("../models/users");
 const Tweet = require("../models/tweets");
+const Likes = require("../models/likes");
 
 function getTweetsByUser(req, res, next) {
   const { user } = req;
@@ -133,44 +134,37 @@ function handleLike(req, res, next) {
   //Includes the userId in the liked_by property of the tweet
   //Responds with the updated tweet as an object
 
+  const { user, tweet } = req;
   const { like } = req.body;
-  const { userId, tweetData } = req;
-  const { tweetContent } = tweetData;
 
   if (like == null) {
     throw new Error("A value must be informed for like");
   }
 
-  dbAdapter
-    .repeatedLike(userId, tweetContent.id)
-    .then((isLiked) => {
-      return like
-        ? removeLike(userId, tweetContent, isLiked)
-        : addLike(userId, tweetContent, isLiked);
-    })
-    .then(() => {
-      res.json({ success: true, updatedTweet: tweetContent });
+  const operation = like ? addLike(user, tweet) : removeLike(user, tweet);
+
+  operation
+    .then((result) => {
+      res.json({ success: true, like: result });
     })
     .catch(next);
 }
 
-function addLike(userId, tweetContent, isLiked) {
-  if (isLiked) {
-    throw new Error(`User ${userId} has already liked this tweet`);
-  }
-
-  return dbAdapter.addLike(userId, tweetContent.id).then(() => {
-    tweetContent.liked_by.push(userId);
+function addLike(user, tweet) {
+  return tweet.addLiker(user).then((result) => {
+    if (!result)
+      throw new Error(`User ${user.id} already liked tweet ${tweet.id}`);
+    const { dataValues } = result[0];
+    return dataValues;
   });
 }
 
-function removeLike(userId, tweetContent, isLiked) {
-  if (!isLiked) {
-    throw new Error(`User ${userId} has not liked this tweet`);
-  }
+function removeLike(user, tweet) {
+  return tweet.removeLiker(user).then((result) => {
+    if (result === 0)
+      throw new Error(`User ${user.id} didn't like ${tweet.id}`);
 
-  return dbAdapter.removeLike(userId, tweetContent.id).then(() => {
-    tweetContent.liked_by = tweetContent.liked_by.filter((id) => id != userId);
+    return result;
   });
 }
 
@@ -182,6 +176,8 @@ function findTweet(req, res, next) {
 
   Tweet.findByPk(id)
     .then((tweet) => {
+      if (!tweet) throw new Error(`Tweet ${id} not found`);
+
       req.tweet = tweet;
       next();
     })

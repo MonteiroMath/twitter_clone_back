@@ -28,7 +28,7 @@ router.post("/", postTweet);
 router.post("/answers/:parentId", parseUserFromBody, postAnswer);
 
 //like route
-router.put("/:id/likes", verifyUser, findTweet, handleLike);
+router.put("/:id/likes", parseUserFromBody, findTweet, handleLike);
 
 //retweet route
 

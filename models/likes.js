@@ -2,7 +2,7 @@ const { Sequelize, DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbAdapter");
 
 const User = require("./users");
-const Tweet = require("./Tweet");
+const Tweet = require("./tweets");
 
 const Likes = sequelize.define("like", {
   userId: {
@@ -13,7 +13,7 @@ const Likes = sequelize.define("like", {
       key: "id",
     },
   },
-  twitterId: {
+  tweetId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
@@ -23,7 +23,7 @@ const Likes = sequelize.define("like", {
   },
 });
 
-User.belongsToMany(Tweet, { through: Likes });
-Tweet.belongsToMany(User, { through: Likes });
+User.belongsToMany(Tweet, { as: "likedTweets", through: Likes });
+Tweet.belongsToMany(User, { as: "likers", through: Likes });
 
 module.exports = Likes;
