@@ -21,6 +21,7 @@ const Tweet = sequelize.define("tweet", {
   },
   message: {
     type: DataTypes.STRING(280),
+    allowNull: false,
     validate: {
       emptyMessageForRetweet(value) {
         if (this.type === "retweet" && value.length !== 0)

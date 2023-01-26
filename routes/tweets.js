@@ -13,7 +13,7 @@ const {
 
 const Tweet = require("../models/tweets");
 
-const { verifyUser } = require("../controllers/users");
+const { verifyUser, parseUserFromBody } = require("../controllers/users");
 
 //get a Tweet by id
 router.get("/:id", findTweet, getTweet);
@@ -25,7 +25,7 @@ router.get("/answers/:parentId", getAnswers);
 router.post("/", postTweet);
 
 //Post a new answer
-router.post("/answers/:parentId", postAnswer);
+router.post("/answers/:parentId", parseUserFromBody, postAnswer);
 
 //like route
 router.put("/:id/likes", verifyUser, findTweet, handleLike);

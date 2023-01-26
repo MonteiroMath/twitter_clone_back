@@ -24,6 +24,7 @@ function getTweet(req, res) {
   res.json({ success: true, tweet });
 }
 
+//todo extracted user querying logic
 function postTweet(req, res, next) {
   const { userId, newTweet } = req.body;
   if (!newTweet || !userId) {
@@ -49,24 +50,32 @@ function postTweet(req, res, next) {
     .catch(next);
 }
 
+//todo Requires testing
 function postAnswer(req, res, next) {
+  const { user } = req;
   const { parentId } = req.params;
-  const { userId, newTweet } = req.body;
+  const { newTweet } = req.body;
 
-  if (!newTweet || !userId) {
+  if (!newTweet) {
     throw new Error("Request missing mandatory parameters");
   }
 
-  const saveTweetPromise = dbAdapter.saveTweet(userId, newTweet, parentId);
+  const { message, attachment, poll } = newTweet;
 
-  const updateTweetPromise = saveTweetPromise.then(() =>
-    dbAdapter.getTweetById(parentId)
-  );
-
-  Promise.all([saveTweetPromise, updateTweetPromise])
-    .then(([tweet, updatedTweet]) =>
-      res.json({ success: true, updatedTweet, ...tweet })
-    )
+  Tweet.findByPk(parentId)
+    .then((parentTweet) => {
+      return parentTweet.createReference({
+        authorId: user.id,
+        type: "answer",
+        message,
+        attachment,
+        poll,
+      });
+    })
+    .then((result) => {
+      const { dataValues } = result;
+      res.json({ success: true, tweet: { ...dataValues } });
+    })
     .catch(next);
 }
 
@@ -179,7 +188,7 @@ function findTweet(req, res, next) {
     .catch(next);
 }
 
-//Require testing
+//todo Requires testing
 function getAnswers(req, res, next) {
   const { parentId } = req.params;
 
