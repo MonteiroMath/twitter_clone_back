@@ -134,38 +134,39 @@ function handleLike(req, res, next) {
   //Includes the userId in the liked_by property of the tweet
   //Responds with the updated tweet as an object
 
+  operation;
+}
+
+function addLike(req, res, next) {
   const { user, tweet } = req;
-  const { like } = req.body;
 
-  if (like == null) {
-    throw new Error("A value must be informed for like");
-  }
-
-  const operation = like ? addLike(user, tweet) : removeLike(user, tweet);
-
-  operation
+  tweet
+    .addLiker(user)
     .then((result) => {
-      res.json({ success: true, like: result });
+      if (!result)
+        throw new Error(`User ${user.id} already liked tweet ${tweet.id}`);
+
+      const { dataValues } = result[0];
+      return dataValues;
+    })
+    .then((like) => {
+      res.json({ success: true, like });
     })
     .catch(next);
 }
 
-function addLike(user, tweet) {
-  return tweet.addLiker(user).then((result) => {
-    if (!result)
-      throw new Error(`User ${user.id} already liked tweet ${tweet.id}`);
-    const { dataValues } = result[0];
-    return dataValues;
-  });
-}
+function removeLike(req, res, next) {
+  const { user, tweet } = req;
 
-function removeLike(user, tweet) {
-  return tweet.removeLiker(user).then((result) => {
-    if (result === 0)
-      throw new Error(`User ${user.id} didn't like ${tweet.id}`);
+  tweet
+    .removeLiker(user)
+    .then((result) => {
+      if (result === 0)
+        throw new Error(`User ${user.id} didn't like ${tweet.id}`);
 
-    return result;
-  });
+      res.json({ success: true });
+    })
+    .catch(next);
 }
 
 function findTweet(req, res, next) {
@@ -207,7 +208,8 @@ module.exports = {
   getTweetsByUser,
   getTweet,
   postTweet,
-  handleLike,
+  addLike,
+  removeLike,
   retweet,
   undoRetweet,
   findTweet,

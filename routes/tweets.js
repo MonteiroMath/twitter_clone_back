@@ -3,7 +3,8 @@ const router = express.Router();
 const {
   getTweet,
   postTweet,
-  handleLike,
+  addLike,
+  removeLike,
   retweet,
   undoRetweet,
   findTweet,
@@ -13,7 +14,11 @@ const {
 
 const Tweet = require("../models/tweets");
 
-const { verifyUser, parseUserFromBody } = require("../controllers/users");
+const {
+  verifyUser,
+  parseUserFromBody,
+  parseUserFromQuery,
+} = require("../controllers/users");
 
 //get a Tweet by id
 router.get("/:id", findTweet, getTweet);
@@ -28,7 +33,8 @@ router.post("/", postTweet);
 router.post("/answers/:parentId", parseUserFromBody, postAnswer);
 
 //like route
-router.put("/:id/likes", parseUserFromBody, findTweet, handleLike);
+router.post("/:id/likes", parseUserFromQuery, findTweet, addLike);
+router.delete("/:id/likes", parseUserFromQuery, findTweet, removeLike);
 
 //retweet route
 
