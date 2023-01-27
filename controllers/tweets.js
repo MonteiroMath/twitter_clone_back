@@ -6,7 +6,19 @@ function getTweetsByUser(req, res, next) {
   const { user } = req;
 
   user
-    .getTweets()
+    .getTweets({
+      limit: 10,
+      order: [["createdAt", "DESC"]],
+      include: [
+        { model: Tweet, as: "referenced", attributes: ["authorId"] },
+        {
+          model: User,
+          as: "likers",
+          attributes: ["id"],
+          through: { attributes: [] },
+        },
+      ],
+    })
     .then((tweets) => {
       res.json({
         success: true,
@@ -20,6 +32,7 @@ function getTweet(req, res) {
   //return a tweet made by an user. Searching work is done my the middleware findTweet. Responds with an object that contains the tweet
 
   const { tweet } = req;
+
   res.json({ success: true, tweet });
 }
 
@@ -98,11 +111,14 @@ function retweet(req, res, next) {
       if (retweet)
         throw new Error(`User ${user.id} already retweeted ${tweet.id}`);
 
-      return tweet.createReference({
+      return Tweet.create({
         authorId: user.id,
         type: "retweet",
         message: "",
       });
+    })
+    .then((retweet) => {
+      return retweet.setReference(tweet);
     })
     .then((result) => {
       const { dataValues } = result;
