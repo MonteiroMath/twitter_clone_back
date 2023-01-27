@@ -87,20 +87,28 @@ function retweet(req, res, next) {
     return the new tweet
   */
 
-  const { userId, tweetData } = req;
-  const { tweet, tweetContent } = tweetData;
+  const { user, tweet } = req;
 
-  dbAdapter
-    .repeatedRetweet(userId, tweetContent.id)
-    .then((isRetweeted) => {
-      if (isRetweeted) {
-        throw new Error(`User ${userId} already retweeted this tweet`);
-      }
-
-      return dbAdapter.postRetweet(userId, tweet.id, tweetContent.id);
-    })
+  Tweet.findOne({
+    where: {
+      authorId: user.id,
+      referenceId: tweet.id,
+      type: "retweet",
+    },
+  })
     .then((retweet) => {
-      res.json({ success: true, ...retweet });
+      if (retweet)
+        throw new Error(`User ${user.id} already retweeted ${tweet.id}`);
+
+      return tweet.createReference({
+        authorId: user.id,
+        type: "retweet",
+        message: "",
+      });
+    })
+    .then((result) => {
+      const { dataValues } = result;
+      res.json({ success: true, tweet: { ...dataValues } });
     })
     .catch(next);
 }
@@ -108,33 +116,23 @@ function retweet(req, res, next) {
 function undoRetweet(req, res, next) {
   //Remove the user from the list of retweeters. Responds with the updated tweet as an object.
   //Needs to be improved to effectively remove a retweet object from the list of objects
-  const { userId, tweetData } = req;
-  const { tweetContent } = tweetData;
+  const { user, tweet } = req;
 
-  dbAdapter
-    .repeatedRetweet(userId, tweetContent.id)
-    .then((isRetweeted) => {
-      if (!isRetweeted) {
-        throw new Error(`User ${userId} has not retweeted this tweet`);
-      }
-
-      return dbAdapter.deleteRetweet(userId, tweetContent.id);
+  Tweet.findOne({
+    where: {
+      authorId: user.id,
+      referenceId: tweet.id,
+      type: "retweet",
+    },
+  })
+    .then((retweet) => {
+      if (!retweet) throw new Error("Retweet not found");
+      return retweet.destroy();
     })
-    .then(() => {
-      tweetContent.retweeted_by = tweetContent.retweeted_by.filter(
-        (id) => userId !== id
-      );
-
-      res.json({ success: true, updatedTweet: tweetContent });
+    .then((result) => {
+      res.json({ success: true });
     })
     .catch(next);
-}
-
-function handleLike(req, res, next) {
-  //Includes the userId in the liked_by property of the tweet
-  //Responds with the updated tweet as an object
-
-  operation;
 }
 
 function addLike(req, res, next) {

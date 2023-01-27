@@ -15,7 +15,6 @@ const {
 const Tweet = require("../models/tweets");
 
 const {
-  verifyUser,
   parseUserFromBody,
   parseUserFromQuery,
 } = require("../controllers/users");
@@ -32,16 +31,13 @@ router.post("/", postTweet);
 //Post a new answer
 router.post("/answers/:parentId", parseUserFromBody, postAnswer);
 
-//like route
+//like/unline routes
 router.post("/:id/likes", parseUserFromQuery, findTweet, addLike);
 router.delete("/:id/likes", parseUserFromQuery, findTweet, removeLike);
 
-//retweet route
+//retweet/undo retweet routes
 
-router.post("/:id/retweet", verifyUser, findTweet, retweet);
-
-//undo retweet route
-
-router.delete("/:id/retweet", verifyUser, findTweet, undoRetweet);
+router.post("/:id/retweet", parseUserFromQuery, findTweet, retweet);
+router.delete("/:id/retweet", parseUserFromQuery, findTweet, undoRetweet);
 
 module.exports = router;

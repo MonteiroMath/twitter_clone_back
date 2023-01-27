@@ -21,14 +21,15 @@ const Tweet = sequelize.define("tweet", {
   },
   message: {
     type: DataTypes.STRING(280),
-    allowNull: false,
+    allowNull: true,
     validate: {
       emptyMessageForRetweet(value) {
-        if (this.type === "retweet" && value.length !== 0)
+        console.log(value);
+        if (this.type === "retweet" && value)
           throw new Error("Message must be empty for retweets");
       },
       filledMessage(value) {
-        if (this.type !== "retweet" && value.length == 0)
+        if (this.type !== "retweet" && (value == null || value.length == 0))
           throw new Error("Message cannot be empty unless it is a retweet");
       },
     },
