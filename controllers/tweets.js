@@ -1,5 +1,3 @@
-const dbAdapter = require("../db/dbAdapter");
-
 const User = require("../models/users");
 const Tweet = require("../models/tweets");
 const Likes = require("../models/likes");
