@@ -1,5 +1,6 @@
 const Sequelize = require("sequelize");
 
+
 const sequelize = new Sequelize(
   "twitterSqlize",
   process.env.DBUSER,
@@ -10,6 +11,9 @@ const sequelize = new Sequelize(
   }
 );
 
+
+
 module.exports = {
-  sequelize,
+  sequelize
+  
 };
