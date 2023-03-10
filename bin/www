@@ -9,6 +9,7 @@ var debug = require("debug")("twitter-b:server");
 var http = require("http");
 
 const { sequelize } = require("../db/dbAdapter");
+const User = require("../models/users");
 
 /**
  * Get port from environment and store in Express.
@@ -29,7 +30,20 @@ var server = http.createServer(app);
 
 sequelize
   .sync()
-  .then(() => {
+  .then(() => User.findByPk(1))
+  .then((user) => {
+    if (!user) {
+      return User.create({
+        username: "TestUser",
+        email: "test@test.com",
+        password: "test",
+        birthDate: "1992-05-28",
+      });
+    }
+
+    return user;
+  })
+  .then((user) => {
     server.listen(port);
   })
   .catch((err) => console.log(err));
