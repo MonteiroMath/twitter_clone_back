@@ -50,9 +50,13 @@ const findUser = (req, res, next) => {
 const parseUserFromBody = (req, res, next) => {
   const { userId } = req.body;
 
+  console.log("ALOOOO");
   User.findByPk(userId)
     .then((user) => {
       if (!user) throw new Error(`User ${userId} not found`);
+
+      console.log("PARSER");
+      console.log(user);
       req.user = user;
       next();
     })

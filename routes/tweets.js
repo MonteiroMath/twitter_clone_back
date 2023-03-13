@@ -26,7 +26,7 @@ router.get("/:id", findTweet, getTweet);
 router.get("/answers/:parentId", getAnswers);
 
 //Post a new tweet
-router.post("/", postTweet);
+router.post("/", parseUserFromBody, postTweet);
 
 //Post a new answer
 router.post("/answers/:parentId", parseUserFromBody, postAnswer);
