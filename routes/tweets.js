@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   getTweet,
+  getTweetsByUser,
   postTweet,
   addLike,
   removeLike,
@@ -18,6 +19,9 @@ const {
   parseUserFromBody,
   parseUserFromQuery,
 } = require("../controllers/users");
+
+// GET tweets for a specific user
+router.get("/", parseUserFromQuery, getTweetsByUser);
 
 //get a Tweet by id
 router.get("/:id", findTweet, getTweet);

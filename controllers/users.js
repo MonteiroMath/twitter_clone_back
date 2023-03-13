@@ -50,13 +50,12 @@ const findUser = (req, res, next) => {
 const parseUserFromBody = (req, res, next) => {
   const { userId } = req.body;
 
-  console.log("ALOOOO");
+  if (!userId) throw new Error(`An user id must be informed`);
+
   User.findByPk(userId)
     .then((user) => {
       if (!user) throw new Error(`User ${userId} not found`);
 
-      console.log("PARSER");
-      console.log(user);
       req.user = user;
       next();
     })
@@ -65,6 +64,8 @@ const parseUserFromBody = (req, res, next) => {
 
 const parseUserFromQuery = (req, res, next) => {
   const { userId } = req.query;
+
+  if (!userId) throw new Error("An user id must be informed");
 
   User.findByPk(userId)
     .then((user) => {
