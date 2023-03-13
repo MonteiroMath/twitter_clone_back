@@ -1,16 +1,44 @@
 const User = require("../models/users");
-const Tweet = require("../models/tweets");
+const { Tweet, TWEET_TYPES } = require("../models/tweets");
 const Likes = require("../models/likes");
 
 function getTweetsByUser(req, res, next) {
   const { user } = req;
+
+  //todo review both includes - at least one is wrong, maybe both
 
   user
     .getTweets({
       limit: 10,
       order: [["createdAt", "DESC"]],
       include: [
-        { model: Tweet, as: "referenced", attributes: ["authorId"] },
+        {
+          model: Tweet,
+          as: "retweets",
+          attributes: ["authorId"],
+          where: {
+            type: "retweet",
+          },
+          required: false,
+        },
+        {
+          model: Tweet,
+          as: "comments",
+          attributes: ["authorId"],
+          where: {
+            type: "comment",
+          },
+          required: false,
+        },
+        {
+          model: Tweet,
+          as: "answers",
+          attributes: ["authorId"],
+          where: {
+            type: "answer",
+          },
+          required: false,
+        },
         {
           model: User,
           as: "likers",

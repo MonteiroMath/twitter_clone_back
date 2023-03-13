@@ -12,6 +12,13 @@ Todo:
  
 */
 
+const TWEET_TYPES = {
+  SIMPLE: "simple",
+  RETWEET: "retweet",
+  COMMENT: "comment",
+  ANSWER: "answer",
+};
+
 const Tweet = sequelize.define("tweet", {
   id: {
     type: DataTypes.INTEGER,
@@ -58,14 +65,13 @@ const Tweet = sequelize.define("tweet", {
     defaultValue: "simple",
     validate: {
       isIn: {
-        args: [["simple", "retweet", "comment", "answer"]],
-        msg: "Type must have a valid value [simples, retweet, comment or answer]",
+        args: [Object.values(TWEET_TYPES)],
+        msg: "Type must have a valid value [simple, retweet, comment or answer]",
       },
     },
   },
 });
 
-//Represents the association a tweet has with another one when it is not of type simple
 Tweet.belongsTo(Tweet, {
   foreignKey: "referenceId",
   as: "reference",
@@ -74,9 +80,21 @@ Tweet.belongsTo(Tweet, {
 });
 Tweet.hasMany(Tweet, {
   foreignKey: "referenceId",
-  as: "referenced",
+  as: "retweets",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+Tweet.hasMany(Tweet, {
+  foreignKey: "referenceId",
+  as: "comments",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+Tweet.hasMany(Tweet, {
+  foreignKey: "referenceId",
+  as: "answers",
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
 
-module.exports = Tweet;
+module.exports = { Tweet, TWEET_TYPES };

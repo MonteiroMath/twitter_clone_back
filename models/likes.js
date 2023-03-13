@@ -2,7 +2,7 @@ const { Sequelize, DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbAdapter");
 
 const User = require("./users");
-const Tweet = require("./tweets");
+const { Tweet } = require("./tweets");
 
 const Likes = sequelize.define("like", {
   userId: {

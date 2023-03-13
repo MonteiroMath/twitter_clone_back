@@ -2,7 +2,7 @@ const { Sequelize, DataTypes } = require("sequelize");
 const validator = require("validator");
 const { sequelize } = require("../db/dbAdapter");
 
-const Tweet = require("./tweets");
+const { Tweet } = require("./tweets");
 
 const User = sequelize.define("user", {
   id: {
