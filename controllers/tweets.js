@@ -5,8 +5,6 @@ const Likes = require("../models/likes");
 function getTweetsByUser(req, res, next) {
   const { user } = req;
 
-  //todo review both includes - at least one is wrong, maybe both
-
   user
     .getTweets({
       limit: 10,
@@ -64,24 +62,21 @@ function getTweet(req, res) {
   res.json({ success: true, tweet });
 }
 
-//todo extracted user querying logic
 function postTweet(req, res, next) {
-  const { userId, newTweet } = req.body;
-  if (!newTweet || !userId) {
-    throw new Error("Request missing mandatory parameters");
+  const { newTweet } = req.body;
+  const { user } = req;
+
+  if (!newTweet) {
+    throw new Error("Request must contain the new tweet data");
   }
 
   const { message, attachment, poll } = newTweet;
 
-  User.findByPk(userId)
-    .then((user) => {
-      if (!user) throw new Error(`User ${userId} not found`);
-
-      return user.createTweet({
-        message,
-        attachment,
-        poll,
-      });
+  user
+    .createTweet({
+      message,
+      attachment,
+      poll,
     })
     .then((result) => {
       const { dataValues } = result;
@@ -106,7 +101,7 @@ function postAnswer(req, res, next) {
     .then((parentTweet) => {
       return parentTweet.createReference({
         authorId: user.id,
-        type: "answer",
+        type: TWEET_TYPES.ANSWER,
         message,
         attachment,
         poll,
@@ -132,7 +127,7 @@ function retweet(req, res, next) {
     where: {
       authorId: user.id,
       referenceId: tweet.id,
-      type: "retweet",
+      type: TWEET_TYPES.RETWEET,
     },
   })
     .then((retweet) => {
@@ -141,7 +136,7 @@ function retweet(req, res, next) {
 
       return Tweet.create({
         authorId: user.id,
-        type: "retweet",
+        type: TWEET_TYPES.RETWEET,
         message: "",
       });
     })
@@ -164,7 +159,7 @@ function undoRetweet(req, res, next) {
     where: {
       authorId: user.id,
       referenceId: tweet.id,
-      type: "retweet",
+      type: TWEET_TYPES.RETWEET,
     },
   })
     .then((retweet) => {
@@ -215,7 +210,43 @@ function findTweet(req, res, next) {
 
   const { id } = req.params;
 
-  Tweet.findByPk(id)
+  Tweet.findByPk(id, {
+    include: [
+      {
+        model: Tweet,
+        as: "retweets",
+        attributes: ["authorId"],
+        where: {
+          type: "retweet",
+        },
+        required: false,
+      },
+      {
+        model: Tweet,
+        as: "comments",
+        attributes: ["authorId"],
+        where: {
+          type: "comment",
+        },
+        required: false,
+      },
+      {
+        model: Tweet,
+        as: "answers",
+        attributes: ["authorId"],
+        where: {
+          type: "answer",
+        },
+        required: false,
+      },
+      {
+        model: User,
+        as: "likers",
+        attributes: ["id"],
+        through: { attributes: [] },
+      },
+    ],
+  })
     .then((tweet) => {
       if (!tweet) throw new Error(`Tweet ${id} not found`);
 
@@ -232,7 +263,7 @@ function getAnswers(req, res, next) {
   Tweet.findAll({
     where: {
       referenceId: parentId,
-      type: "answer",
+      type: TWEET_TYPES.ANSWER,
     },
   })
     .then((tweets) => {
