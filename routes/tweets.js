@@ -8,6 +8,7 @@ const {
   removeLike,
   retweet,
   undoRetweet,
+  addComment,
   findTweet,
   getAnswers,
   postAnswer,
@@ -26,14 +27,13 @@ router.get("/", parseUserFromQuery, getTweetsByUser);
 //get a Tweet by id
 router.get("/:id", findTweet, getTweet);
 
-//get Answers for a tweet
-router.get("/answers/:parentId", getAnswers);
-
 //Post a new tweet
 router.post("/", parseUserFromBody, postTweet);
 
+//get Answers for a tweet
+router.get("/:parentId/answers/", getAnswers);
 //Post a new answer
-router.post("/answers/:parentId", parseUserFromBody, postAnswer);
+router.post("/:parentId/answers/", parseUserFromBody, postAnswer);
 
 //like/unline routes
 router.post("/:id/likes", parseUserFromQuery, findTweet, addLike);
@@ -43,5 +43,9 @@ router.delete("/:id/likes", parseUserFromQuery, findTweet, removeLike);
 
 router.post("/:id/retweet", parseUserFromQuery, findTweet, retweet);
 router.delete("/:id/retweet", parseUserFromQuery, findTweet, undoRetweet);
+
+//comment route
+
+router.post("/:id/comments", parseUserFromBody, findTweet, addComment);
 
 module.exports = router;

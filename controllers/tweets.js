@@ -85,7 +85,24 @@ function postTweet(req, res, next) {
     .catch(next);
 }
 
-//todo Requires testing
+function getAnswers(req, res, next) {
+  const { parentId } = req.params;
+
+  Tweet.findAll({
+    where: {
+      referenceId: parentId,
+      type: TWEET_TYPES.ANSWER,
+    },
+  })
+    .then((tweets) => {
+      res.json({
+        success: true,
+        tweets,
+      });
+    })
+    .catch(next);
+}
+
 function postAnswer(req, res, next) {
   const { user } = req;
   const { parentId } = req.params;
@@ -97,9 +114,10 @@ function postAnswer(req, res, next) {
 
   const { message, attachment, poll } = newTweet;
 
+  //todo extract tweet finding logic
   Tweet.findByPk(parentId)
     .then((parentTweet) => {
-      return parentTweet.createReference({
+      return parentTweet.createAnswer({
         authorId: user.id,
         type: TWEET_TYPES.ANSWER,
         message,
@@ -115,12 +133,6 @@ function postAnswer(req, res, next) {
 }
 
 function retweet(req, res, next) {
-  /*
-    Create a new tweet on the tweets table
-    tweet has the retweeet prop set to 1 and content set to a tweet that already exists
-    return the new tweet
-  */
-
   const { user, tweet } = req;
 
   Tweet.findOne({
@@ -168,6 +180,32 @@ function undoRetweet(req, res, next) {
     })
     .then((result) => {
       res.json({ success: true });
+    })
+    .catch(next);
+}
+
+function addComment(req, res, next) {
+  const { user, tweet } = req;
+  const { newTweet } = req.body;
+
+  if (!newTweet) {
+    throw new Error("Request must contain the comment data");
+  }
+
+  const { message, attachment } = newTweet;
+
+  Tweet.create({
+    authorId: user.id,
+    type: TWEET_TYPES.COMMENT,
+    message,
+    attachment,
+  })
+    .then((comment) => {
+      return comment.setReference(tweet);
+    })
+    .then((result) => {
+      const { dataValues } = result;
+      res.json({ success: true, comment: { ...dataValues } });
     })
     .catch(next);
 }
@@ -256,25 +294,6 @@ function findTweet(req, res, next) {
     .catch(next);
 }
 
-//todo Requires testing
-function getAnswers(req, res, next) {
-  const { parentId } = req.params;
-
-  Tweet.findAll({
-    where: {
-      referenceId: parentId,
-      type: TWEET_TYPES.ANSWER,
-    },
-  })
-    .then((tweets) => {
-      res.json({
-        success: true,
-        tweets,
-      });
-    })
-    .catch(next);
-}
-
 module.exports = {
   getTweetsByUser,
   getTweet,
@@ -283,6 +302,7 @@ module.exports = {
   removeLike,
   retweet,
   undoRetweet,
+  addComment,
   findTweet,
   getAnswers,
   postAnswer,
