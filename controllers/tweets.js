@@ -2,6 +2,42 @@ const User = require("../models/users");
 const { Tweet, TWEET_TYPES } = require("../models/tweets");
 const Likes = require("../models/likes");
 
+const includeOptions = [
+  {
+    model: Tweet,
+    as: "retweets",
+    attributes: ["authorId"],
+    where: {
+      type: "retweet",
+    },
+    required: false,
+  },
+  {
+    model: Tweet,
+    as: "comments",
+    attributes: ["authorId"],
+    where: {
+      type: "comment",
+    },
+    required: false,
+  },
+  {
+    model: Tweet,
+    as: "answers",
+    attributes: ["authorId"],
+    where: {
+      type: "answer",
+    },
+    required: false,
+  },
+  {
+    model: User,
+    as: "likers",
+    attributes: ["id"],
+    through: { attributes: [] },
+  },
+];
+
 function getTweetsByUser(req, res, next) {
   const { user } = req;
 
@@ -9,41 +45,7 @@ function getTweetsByUser(req, res, next) {
     .getTweets({
       limit: 10,
       order: [["createdAt", "DESC"]],
-      include: [
-        {
-          model: Tweet,
-          as: "retweets",
-          attributes: ["authorId"],
-          where: {
-            type: "retweet",
-          },
-          required: false,
-        },
-        {
-          model: Tweet,
-          as: "comments",
-          attributes: ["authorId"],
-          where: {
-            type: "comment",
-          },
-          required: false,
-        },
-        {
-          model: Tweet,
-          as: "answers",
-          attributes: ["authorId"],
-          where: {
-            type: "answer",
-          },
-          required: false,
-        },
-        {
-          model: User,
-          as: "likers",
-          attributes: ["id"],
-          through: { attributes: [] },
-        },
-      ],
+      include: includeOptions,
     })
     .then((tweets) => {
       res.json({
@@ -80,8 +82,10 @@ function postTweet(req, res, next) {
     })
     .then((result) => {
       const { dataValues } = result;
-      res.json({ success: true, tweet: dataValues });
+
+      return Tweet.findByPk(dataValues.id, { include: includeOptions });
     })
+    .then((tweet) => res.json({ success: true, tweet }))
     .catch(next);
 }
 
@@ -127,8 +131,10 @@ function postAnswer(req, res, next) {
     })
     .then((result) => {
       const { dataValues } = result;
-      res.json({ success: true, tweet: { ...dataValues } });
+
+      return Tweet.findByPk(dataValues.id, { include: includeOptions });
     })
+    .then((tweet) => res.json({ success: true, tweet }))
     .catch(next);
 }
 
@@ -157,8 +163,10 @@ function retweet(req, res, next) {
     })
     .then((result) => {
       const { dataValues } = result;
-      res.json({ success: true, tweet: { ...dataValues } });
+
+      return Tweet.findByPk(dataValues.id, { include: includeOptions });
     })
+    .then((tweet) => res.json({ success: true, tweet }))
     .catch(next);
 }
 
@@ -205,8 +213,10 @@ function addComment(req, res, next) {
     })
     .then((result) => {
       const { dataValues } = result;
-      res.json({ success: true, comment: { ...dataValues } });
+
+      return Tweet.findByPk(dataValues.id, { include: includeOptions });
     })
+    .then((tweet) => res.json({ success: true, tweet }))
     .catch(next);
 }
 
@@ -249,41 +259,7 @@ function findTweet(req, res, next) {
   const { id } = req.params;
 
   Tweet.findByPk(id, {
-    include: [
-      {
-        model: Tweet,
-        as: "retweets",
-        attributes: ["authorId"],
-        where: {
-          type: "retweet",
-        },
-        required: false,
-      },
-      {
-        model: Tweet,
-        as: "comments",
-        attributes: ["authorId"],
-        where: {
-          type: "comment",
-        },
-        required: false,
-      },
-      {
-        model: Tweet,
-        as: "answers",
-        attributes: ["authorId"],
-        where: {
-          type: "answer",
-        },
-        required: false,
-      },
-      {
-        model: User,
-        as: "likers",
-        attributes: ["id"],
-        through: { attributes: [] },
-      },
-    ],
+    include: includeOptions,
   })
     .then((tweet) => {
       if (!tweet) throw new Error(`Tweet ${id} not found`);
