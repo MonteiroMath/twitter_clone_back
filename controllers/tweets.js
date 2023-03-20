@@ -52,13 +52,16 @@ function postTweet(req, res, next) {
     .then((result) => {
       const { dataValues } = result;
 
-      return Tweet.findByPk(dataValues.id, { include: includeOptions });
+      return Tweet.findByPk(dataValues.id, {
+        attributes: { include: includeOptions(user.id) },
+      });
     })
     .then((tweet) => res.json({ success: true, tweet }))
     .catch(next);
 }
 
 function getAnswers(req, res, next) {
+  const { user } = req;
   const { parentId } = req.params;
 
   Tweet.findAll({
@@ -66,7 +69,9 @@ function getAnswers(req, res, next) {
       referenceId: parentId,
       type: TWEET_TYPES.ANSWER,
     },
-    include: includeOptions,
+    attributes: {
+      include: includeOptions(user.id),
+    },
   })
     .then((tweets) => {
       res.json({
@@ -90,9 +95,7 @@ function postAnswer(req, res, next) {
 
   let oldTweet;
 
-  Tweet.findByPk(parentId, {
-    include: includeOptions,
-  })
+  Tweet.findByPk(parentId)
     .then((parentTweet) => {
       oldTweet = parentTweet;
 
@@ -109,8 +112,10 @@ function postAnswer(req, res, next) {
       const answerTweetId = dataValues.id;
 
       return Promise.all([
-        oldTweet.reload(),
-        Tweet.findByPk(answerTweetId, { include: includeOptions }),
+        oldTweet.reload({ attributes: { include: includeOptions(user.id) } }),
+        Tweet.findByPk(answerTweetId, {
+          attributes: { include: includeOptions(user.id) },
+        }),
       ]);
     })
     .then(([updatedTweet, tweet]) =>
@@ -145,9 +150,19 @@ function retweet(req, res, next) {
     .then((result) => {
       const { dataValues } = result;
 
-      return Tweet.findByPk(dataValues.id, { include: includeOptions });
+      const updatedTweetPromise = tweet.reload({
+        attributes: { include: includeOptions(user.id) },
+      });
+
+      const newTweetPromise = Tweet.findByPk(dataValues.id, {
+        attributes: { include: includeOptions(user.id) },
+      });
+
+      return Promise.all([updatedTweetPromise, newTweetPromise]);
     })
-    .then((tweet) => res.json({ success: true, tweet }))
+    .then(([updatedTweet, tweet]) =>
+      res.json({ success: true, updatedTweet, tweet })
+    )
     .catch(next);
 }
 
@@ -168,8 +183,9 @@ function undoRetweet(req, res, next) {
       return retweet.destroy();
     })
     .then((result) => {
-      res.json({ success: true });
+      return tweet.reload({ attributes: { include: includeOptions(user.id) } });
     })
+    .then((updatedTweet) => res.json({ success: true, updatedTweet }))
     .catch(next);
 }
 
@@ -195,9 +211,19 @@ function addComment(req, res, next) {
     .then((result) => {
       const { dataValues } = result;
 
-      return Tweet.findByPk(dataValues.id, { include: includeOptions });
+      const updatedTweetPromise = tweet.reload({
+        attributes: { include: includeOptions(user.id) },
+      });
+
+      const newTweetPromise = Tweet.findByPk(dataValues.id, {
+        attributes: { include: includeOptions(user.id) },
+      });
+
+      return Promise.all([updatedTweetPromise, newTweetPromise]);
     })
-    .then((tweet) => res.json({ success: true, tweet }))
+    .then(([updatedTweet, tweet]) =>
+      res.json({ success: true, updatedTweet, tweet })
+    )
     .catch(next);
 }
 
@@ -210,11 +236,12 @@ function addLike(req, res, next) {
       if (!result)
         throw new Error(`User ${user.id} already liked tweet ${tweet.id}`);
 
-      const { dataValues } = result[0];
-      return dataValues;
+      return tweet.reload({
+        attributes: { include: includeOptions(user.id) },
+      });
     })
-    .then((like) => {
-      res.json({ success: true, like });
+    .then((updatedTweet) => {
+      res.json({ success: true, updatedTweet });
     })
     .catch(next);
 }
@@ -228,8 +255,11 @@ function removeLike(req, res, next) {
       if (result === 0)
         throw new Error(`User ${user.id} didn't like ${tweet.id}`);
 
-      res.json({ success: true });
+      return tweet.reload({
+        attributes: { include: includeOptions(user.id) },
+      });
     })
+    .then((updatedTweet) => res.json({ success: true, updatedTweet }))
     .catch(next);
 }
 

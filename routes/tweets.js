@@ -31,7 +31,7 @@ router.get("/:id", parseUserFromQuery, findTweet, getTweet);
 router.post("/", parseUserFromBody, postTweet);
 
 //get Answers for a tweet
-router.get("/:parentId/answers/", getAnswers);
+router.get("/:parentId/answers/", parseUserFromQuery, getAnswers);
 //Post a new answer
 router.post("/:parentId/answers/", parseUserFromBody, postAnswer);
 
