@@ -25,7 +25,7 @@ const {
 router.get("/", parseUserFromQuery, getTweetsByUser);
 
 //get a Tweet by id
-router.get("/:id", findTweet, getTweet);
+router.get("/:id", parseUserFromQuery, findTweet, getTweet);
 
 //Post a new tweet
 router.post("/", parseUserFromBody, postTweet);

@@ -1,51 +1,20 @@
 const User = require("../models/users");
+const Sequelize = require("sequelize");
 const { Tweet, TWEET_TYPES } = require("../models/tweets");
 const Likes = require("../models/likes");
-
-const includeOptions = [
-  {
-    model: Tweet,
-    as: "retweets",
-    attributes: ["authorId"],
-    where: {
-      type: "retweet",
-    },
-    required: false,
-  },
-  {
-    model: Tweet,
-    as: "comments",
-    attributes: ["authorId"],
-    where: {
-      type: "comment",
-    },
-    required: false,
-  },
-  {
-    model: Tweet,
-    as: "answers",
-    attributes: ["authorId"],
-    where: {
-      type: "answer",
-    },
-    required: false,
-  },
-  {
-    model: User,
-    as: "likers",
-    attributes: ["id"],
-    through: { attributes: [] },
-  },
-];
+const includeOptions = require("./utils/includeOptions");
 
 function getTweetsByUser(req, res, next) {
   const { user } = req;
 
   user
     .getTweets({
-      limit: 10,
+      limit: 100,
+      subQuery: false,
       order: [["createdAt", "DESC"]],
-      include: includeOptions,
+      attributes: {
+        include: includeOptions(user.id),
+      },
     })
     .then((tweets) => {
       res.json({
@@ -97,6 +66,7 @@ function getAnswers(req, res, next) {
       referenceId: parentId,
       type: TWEET_TYPES.ANSWER,
     },
+    include: includeOptions,
   })
     .then((tweets) => {
       res.json({
@@ -118,9 +88,14 @@ function postAnswer(req, res, next) {
 
   const { message, attachment, poll } = newTweet;
 
-  //todo extract tweet finding logic
-  Tweet.findByPk(parentId)
+  let oldTweet;
+
+  Tweet.findByPk(parentId, {
+    include: includeOptions,
+  })
     .then((parentTweet) => {
+      oldTweet = parentTweet;
+
       return parentTweet.createAnswer({
         authorId: user.id,
         type: TWEET_TYPES.ANSWER,
@@ -131,10 +106,16 @@ function postAnswer(req, res, next) {
     })
     .then((result) => {
       const { dataValues } = result;
+      const answerTweetId = dataValues.id;
 
-      return Tweet.findByPk(dataValues.id, { include: includeOptions });
+      return Promise.all([
+        oldTweet.reload(),
+        Tweet.findByPk(answerTweetId, { include: includeOptions }),
+      ]);
     })
-    .then((tweet) => res.json({ success: true, tweet }))
+    .then(([updatedTweet, tweet]) =>
+      res.json({ success: true, updatedTweet, tweet })
+    )
     .catch(next);
 }
 
@@ -256,10 +237,15 @@ function findTweet(req, res, next) {
   //middleware to find a tweet. Adds it to the tweet property of the req.
   //responds with a 404 error if no tweet is found with the id informed in the url
 
+  const { user } = req;
   const { id } = req.params;
 
+  if (!user) throw new Error("An user id must be informed");
+
   Tweet.findByPk(id, {
-    include: includeOptions,
+    attributes: {
+      include: includeOptions(user.id),
+    },
   })
     .then((tweet) => {
       if (!tweet) throw new Error(`Tweet ${id} not found`);
