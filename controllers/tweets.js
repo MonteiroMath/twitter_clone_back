@@ -1,8 +1,6 @@
-const User = require("../models/users");
-const Sequelize = require("sequelize");
 const { Tweet, TWEET_TYPES } = require("../models/tweets");
-const Likes = require("../models/likes");
-const includeOptions = require("./utils/includeOptions");
+
+const { includeOptions, getPopulatedTweet } = require("./utils/tweetUtils");
 
 function getTweetsByUser(req, res, next) {
   const { user } = req;
@@ -29,7 +27,6 @@ function getTweet(req, res) {
   //return a tweet made by an user. Searching work is done my the middleware findTweet. Responds with an object that contains the tweet
 
   const { tweet } = req;
-
   res.json({ success: true, tweet });
 }
 
@@ -49,24 +46,18 @@ function postTweet(req, res, next) {
       attachment,
       poll,
     })
-    .then((result) => {
-      const { dataValues } = result;
-
-      return Tweet.findByPk(dataValues.id, {
-        attributes: { include: includeOptions(user.id) },
-      });
-    })
+    .then(({ dataValues: tweet }) => getPopulatedTweet(tweet.id, user.id))
     .then((tweet) => res.json({ success: true, tweet }))
     .catch(next);
 }
 
 function getAnswers(req, res, next) {
   const { user } = req;
-  const { parentId } = req.params;
+  const { id } = req.params;
 
   Tweet.findAll({
     where: {
-      referenceId: parentId,
+      referenceId: id,
       type: TWEET_TYPES.ANSWER,
     },
     attributes: {
@@ -83,8 +74,7 @@ function getAnswers(req, res, next) {
 }
 
 function postAnswer(req, res, next) {
-  const { user } = req;
-  const { parentId } = req.params;
+  const { user, tweet } = req;
   const { newTweet } = req.body;
 
   if (!newTweet) {
@@ -93,31 +83,20 @@ function postAnswer(req, res, next) {
 
   const { message, attachment, poll } = newTweet;
 
-  let oldTweet;
-
-  Tweet.findByPk(parentId)
-    .then((parentTweet) => {
-      oldTweet = parentTweet;
-
-      return parentTweet.createAnswer({
-        authorId: user.id,
-        type: TWEET_TYPES.ANSWER,
-        message,
-        attachment,
-        poll,
-      });
+  tweet
+    .createAnswer({
+      authorId: user.id,
+      type: TWEET_TYPES.ANSWER,
+      message,
+      attachment,
+      poll,
     })
-    .then((result) => {
-      const { dataValues } = result;
-      const answerTweetId = dataValues.id;
-
-      return Promise.all([
-        oldTweet.reload({ attributes: { include: includeOptions(user.id) } }),
-        Tweet.findByPk(answerTweetId, {
-          attributes: { include: includeOptions(user.id) },
-        }),
-      ]);
-    })
+    .then(({ dataValues: answer }) =>
+      Promise.all([
+        getPopulatedTweet(tweet.id, user.id),
+        getPopulatedTweet(answer.id, user.id),
+      ])
+    )
     .then(([updatedTweet, tweet]) =>
       res.json({ success: true, updatedTweet, tweet })
     )
@@ -144,31 +123,20 @@ function retweet(req, res, next) {
         message: "",
       });
     })
-    .then((retweet) => {
-      return retweet.setReference(tweet);
-    })
-    .then((result) => {
-      const { dataValues } = result;
-
-      const updatedTweetPromise = tweet.reload({
-        attributes: { include: includeOptions(user.id) },
-      });
-
-      const newTweetPromise = Tweet.findByPk(dataValues.id, {
-        attributes: { include: includeOptions(user.id) },
-      });
-
-      return Promise.all([updatedTweetPromise, newTweetPromise]);
-    })
-    .then(([updatedTweet, tweet]) =>
-      res.json({ success: true, updatedTweet, tweet })
+    .then((retweet) => retweet.setReference(tweet))
+    .then(({ dataValues: retweet }) =>
+      Promise.all([
+        getPopulatedTweet(tweet.id, user.id),
+        getPopulatedTweet(retweet.id, user.id),
+      ])
+    )
+    .then(([updatedTweet, retweet]) =>
+      res.json({ success: true, updatedTweet, tweet: retweet })
     )
     .catch(next);
 }
 
 function undoRetweet(req, res, next) {
-  //Remove the user from the list of retweeters. Responds with the updated tweet as an object.
-  //Needs to be improved to effectively remove a retweet object from the list of objects
   const { user, tweet } = req;
 
   Tweet.findOne({
@@ -182,9 +150,7 @@ function undoRetweet(req, res, next) {
       if (!retweet) throw new Error("Retweet not found");
       return retweet.destroy();
     })
-    .then((result) => {
-      return tweet.reload({ attributes: { include: includeOptions(user.id) } });
-    })
+    .then(() => getPopulatedTweet(tweet.id, user.id))
     .then((updatedTweet) => res.json({ success: true, updatedTweet }))
     .catch(next);
 }
@@ -205,22 +171,13 @@ function addComment(req, res, next) {
     message,
     attachment,
   })
-    .then((comment) => {
-      return comment.setReference(tweet);
-    })
-    .then((result) => {
-      const { dataValues } = result;
-
-      const updatedTweetPromise = tweet.reload({
-        attributes: { include: includeOptions(user.id) },
-      });
-
-      const newTweetPromise = Tweet.findByPk(dataValues.id, {
-        attributes: { include: includeOptions(user.id) },
-      });
-
-      return Promise.all([updatedTweetPromise, newTweetPromise]);
-    })
+    .then((comment) => comment.setReference(tweet))
+    .then(({ dataValues: comment }) =>
+      Promise.all([
+        getPopulatedTweet(tweet.id, user.id),
+        getPopulatedTweet(comment.id, user.id),
+      ])
+    )
     .then(([updatedTweet, tweet]) =>
       res.json({ success: true, updatedTweet, tweet })
     )
@@ -236,13 +193,9 @@ function addLike(req, res, next) {
       if (!result)
         throw new Error(`User ${user.id} already liked tweet ${tweet.id}`);
 
-      return tweet.reload({
-        attributes: { include: includeOptions(user.id) },
-      });
+      return getPopulatedTweet(tweet.id, user.id);
     })
-    .then((updatedTweet) => {
-      res.json({ success: true, updatedTweet });
-    })
+    .then((updatedTweet) => res.json({ success: true, updatedTweet }))
     .catch(next);
 }
 
@@ -255,9 +208,7 @@ function removeLike(req, res, next) {
       if (result === 0)
         throw new Error(`User ${user.id} didn't like ${tweet.id}`);
 
-      return tweet.reload({
-        attributes: { include: includeOptions(user.id) },
-      });
+      return getPopulatedTweet(tweet.id, user.id);
     })
     .then((updatedTweet) => res.json({ success: true, updatedTweet }))
     .catch(next);
@@ -272,11 +223,7 @@ function findTweet(req, res, next) {
 
   if (!user) throw new Error("An user id must be informed");
 
-  Tweet.findByPk(id, {
-    attributes: {
-      include: includeOptions(user.id),
-    },
-  })
+  getPopulatedTweet(id, user.id)
     .then((tweet) => {
       if (!tweet) throw new Error(`Tweet ${id} not found`);
 

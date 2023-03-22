@@ -31,9 +31,9 @@ router.get("/:id", parseUserFromQuery, findTweet, getTweet);
 router.post("/", parseUserFromBody, postTweet);
 
 //get Answers for a tweet
-router.get("/:parentId/answers/", parseUserFromQuery, getAnswers);
+router.get("/:id/answers/", parseUserFromQuery, getAnswers);
 //Post a new answer
-router.post("/:parentId/answers/", parseUserFromBody, postAnswer);
+router.post("/:id/answers/", parseUserFromBody, findTweet, postAnswer);
 
 //like/unline routes
 router.post("/:id/likes", parseUserFromQuery, findTweet, addLike);
