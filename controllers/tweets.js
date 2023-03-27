@@ -1,3 +1,4 @@
+require("../models/likes");
 const { Tweet, TWEET_TYPES } = require("../models/tweets");
 
 const { includeOptions, getPopulatedTweet } = require("./utils/tweetUtils");
@@ -24,8 +25,6 @@ function getTweetsByUser(req, res, next) {
 }
 
 function getTweet(req, res) {
-  //return a tweet made by an user. Searching work is done my the middleware findTweet. Responds with an object that contains the tweet
-
   const { tweet } = req;
   res.json({ success: true, tweet });
 }
