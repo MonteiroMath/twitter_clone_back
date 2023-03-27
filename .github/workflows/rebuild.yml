@@ -1,0 +1,13 @@
+name: rebuild_and_deploy
+run-name: Rebuild and deploy front-end when the database is updated
+on: [repository_dispatch]
+jobs:
+  rebuild:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: echo testing
+      
