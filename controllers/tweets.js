@@ -8,7 +8,7 @@ function getTweetsByUser(req, res, next) {
 
   user
     .getTweets({
-      limit: 100,
+      limit: 10,
       subQuery: false,
       order: [["createdAt", "DESC"]],
       attributes: {
