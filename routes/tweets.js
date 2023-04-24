@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   getTweet,
+  getReference,
   getTweetsByUser,
   postTweet,
   addLike,
@@ -26,6 +27,7 @@ router.get("/", parseUserFromQuery, getTweetsByUser);
 
 //get a Tweet by id
 router.get("/:id", parseUserFromQuery, findTweet, getTweet);
+router.get("/:id/reference", parseUserFromQuery, findTweet, getReference);
 
 //Post a new tweet
 router.post("/", parseUserFromBody, postTweet);

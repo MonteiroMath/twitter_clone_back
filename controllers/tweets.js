@@ -29,6 +29,25 @@ function getTweet(req, res) {
   res.json({ success: true, tweet });
 }
 
+function getReference(req, res, next) {
+  const { user, tweet } = req;
+
+  if (!tweet.referenceId) throw new Error("Tweet has no reference.");
+  tweet
+    .getReference({
+      attributes: {
+        include: includeOptions(user.id),
+      },
+    })
+    .then((dataValues) => {
+      res.json({
+        success: true,
+        tweet: { ...tweet.toJSON(), reference: dataValues },
+      });
+    })
+    .catch(next);
+}
+
 function postTweet(req, res, next) {
   const { newTweet } = req.body;
   const { user } = req;
@@ -235,6 +254,7 @@ function findTweet(req, res, next) {
 module.exports = {
   getTweetsByUser,
   getTweet,
+  getReference,
   postTweet,
   addLike,
   removeLike,
