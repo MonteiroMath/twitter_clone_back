@@ -232,6 +232,51 @@ function removeLike(req, res, next) {
     .catch(next);
 }
 
+function addLikeRT(req, res, next) {
+  const { user, tweet } = req;
+
+  /*
+    - get tweet reference
+    - like reference
+    - get updated reference
+    - return updated tweet and updated reference
+
+  */
+
+  if (!tweet.referenceId) throw new Error("Tweet has no reference.");
+
+  tweet
+    .getReference({
+      attributes: {
+        include: includeOptions(user.id),
+      },
+    })
+    .then((reference) => reference.addLiker(user))
+    .then((result) => {
+      if (!result)
+        throw new Error(
+          `User ${user.id} already liked tweet ${tweet.referenceId}`
+        );
+
+      return getPopulatedTweet(tweet.referenceId, user.id);
+    })
+    .then((updatedReference) =>
+      res.json({
+        success: true,
+        updatedTweet: { ...tweet.toJSON(), reference: updatedReference },
+        updatedReference,
+      })
+    )
+    .catch(next);
+
+  return;
+}
+
+function removeLikeRT() {
+  const { user, tweet } = req;
+  return;
+}
+
 function findTweet(req, res, next) {
   //middleware to find a tweet. Adds it to the tweet property of the req.
   //responds with a 404 error if no tweet is found with the id informed in the url
@@ -258,6 +303,8 @@ module.exports = {
   postTweet,
   addLike,
   removeLike,
+  addLikeRT,
+  removeLikeRT,
   retweet,
   undoRetweet,
   addComment,

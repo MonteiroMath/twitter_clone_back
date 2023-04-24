@@ -7,6 +7,8 @@ const {
   postTweet,
   addLike,
   removeLike,
+  addLikeRT,
+  removeLikeRT,
   retweet,
   undoRetweet,
   addComment,
@@ -40,6 +42,9 @@ router.post("/:id/answers/", parseUserFromBody, findTweet, postAnswer);
 //like/unline routes
 router.post("/:id/likes", parseUserFromQuery, findTweet, addLike);
 router.delete("/:id/likes", parseUserFromQuery, findTweet, removeLike);
+
+router.post("/:id/likes/rt", parseUserFromQuery, findTweet, addLikeRT);
+router.delete("/:id/likes/rt", parseUserFromQuery, findTweet, removeLikeRT);
 
 //retweet/undo retweet routes
 
