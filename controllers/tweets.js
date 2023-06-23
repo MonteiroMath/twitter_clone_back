@@ -272,9 +272,34 @@ function addLikeRT(req, res, next) {
   return;
 }
 
-function removeLikeRT() {
+function removeLikeRT(req, res, next) {
   const { user, tweet } = req;
-  return;
+
+  if (!tweet.referenceId) throw new Error("Tweet has no reference.");
+
+  tweet
+    .getReference({
+      attributes: {
+        include: includeOptions(user.id),
+      },
+    })
+    .then((reference) => reference.removeLiker(user))
+    .then((result) => {
+      if (!result)
+        throw new Error(
+          `User ${user.id} had not liked tweet ${tweet.referenceId}`
+        );
+
+      return getPopulatedTweet(tweet.referenceId, user.id);
+    })
+    .then((updatedReference) =>
+      res.json({
+        success: true,
+        updatedTweet: { ...tweet.toJSON(), reference: updatedReference },
+        updatedReference,
+      })
+    )
+    .catch(next);
 }
 
 function findTweet(req, res, next) {
