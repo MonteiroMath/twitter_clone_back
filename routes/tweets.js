@@ -53,6 +53,6 @@ router.delete("/:id/retweet", parseUserFromQuery, findTweet, undoRetweet);
 
 //comment route
 
-router.post("/:id/comments", parseUserFromBody, findTweet, addComment);
+router.post("/:id/comments", parseUserFromQuery, findTweet, addComment);
 
 module.exports = router;

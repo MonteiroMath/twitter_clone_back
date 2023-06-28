@@ -11,6 +11,7 @@ function getTweetsByUser(req, res, next) {
       limit: 10,
       subQuery: false,
       order: [["createdAt", "DESC"]],
+      include: "reference",
       attributes: {
         include: includeOptions(user.id),
       },
@@ -72,6 +73,8 @@ function postTweet(req, res, next) {
 function getAnswers(req, res, next) {
   const { user } = req;
   const { id } = req.params;
+
+  console.log(id);
 
   Tweet.findAll({
     where: {
