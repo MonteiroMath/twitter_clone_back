@@ -45,6 +45,7 @@ function includeOptions(userId) {
 //wrapper around tweetFindByPk to get fully populated tweets.
 function getPopulatedTweet(tweetId, userId) {
   return Tweet.findByPk(tweetId, {
+    include: "reference",
     attributes: {
       include: includeOptions(userId),
     },
