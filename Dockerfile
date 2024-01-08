@@ -1,7 +1,9 @@
 FROM node:18-alpine
 
-WORKDIR /home/twitterb
+WORKDIR /twitterb
 COPY package.json .
 RUN npm install
-COPY . .
-CMD [ "npm", "start" ]
+#COPY . .
+
+CMD ["npm", "run", "dev"]
+#CMD [ "npm", "start" ]
