@@ -47,7 +47,6 @@ const findUser = (req, res, next) => {
     .catch(next);
 };
 
-//todo remove to a separated middleware file in a middleware folder
 const parseUserFromBody = (req, res, next) => {
   const { userId } = req.body;
 
@@ -63,7 +62,6 @@ const parseUserFromBody = (req, res, next) => {
     .catch(next);
 };
 
-//todo remove to a separated middleware file in a middleware folder
 const parseUserFromQuery = (req, res, next) => {
   const { userId } = req.query;
 

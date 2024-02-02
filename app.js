@@ -4,35 +4,20 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const cors = require("cors");
-const session = require("express-session");
-const SequelizeStore = require("connect-session-sequelize")(session.Store);
 require("dotenv").config();
 
-const { sequelize } = require("./db/dbAdapter");
 const User = require("./models/users");
 
 const usersRouter = require("./routes/users");
 const tweetsRouter = require("./routes/tweets");
 
 const app = express();
-const store = new SequelizeStore({ db: sequelize });
-store.sync();
-
-app.use(
-  session({
-    secret: "this is very very secret",
-    store,
-    resave: false,
-    saveUninitialized: false,
-  })
-);
 
 app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/users", usersRouter);
