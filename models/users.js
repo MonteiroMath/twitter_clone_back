@@ -24,7 +24,7 @@ const User = sequelize.define("user", {
     },
   },
   password: {
-    type: DataTypes.STRING(10),
+    type: DataTypes.STRING(),
     allowNull: false,
   }, //temporary / placeholder until authentication is implemented
   description: {
