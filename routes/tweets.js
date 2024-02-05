@@ -1,5 +1,8 @@
 const express = require("express");
 const router = express.Router();
+
+const checkAuth = require("../middleware/checkAuth");
+
 const {
   getTweet,
   getReference,
@@ -29,30 +32,36 @@ router.get("/", parseUserFromQuery, getTweetsByUser);
 
 //get a Tweet by id
 router.get("/:id", parseUserFromQuery, findTweet, getTweet);
-router.get("/:id/reference", parseUserFromQuery, findTweet, getReference);
+router.get(
+  "/:id/reference",
+  checkAuth,
+  parseUserFromQuery,
+  findTweet,
+  getReference
+);
 
 //Post a new tweet
-router.post("/", parseUserFromBody, postTweet);
+router.post("/", checkAuth, parseUserFromBody, postTweet);
 
 //get Answers for a tweet
 router.get("/:id/answers/", parseUserFromQuery, getAnswers);
 //Post a new answer
-router.post("/:id/answers/", parseUserFromBody, findTweet, postAnswer);
+router.post("/:id/answers/", checkAuth, parseUserFromBody, findTweet, postAnswer);
 
 //like/unline routes
-router.post("/:id/likes", parseUserFromQuery, findTweet, addLike);
-router.delete("/:id/likes", parseUserFromQuery, findTweet, removeLike);
+router.post("/:id/likes", checkAuth, parseUserFromQuery, findTweet, addLike);
+router.delete("/:id/likes", checkAuth, parseUserFromQuery, findTweet, removeLike);
 
-router.post("/:id/likes/rt", parseUserFromQuery, findTweet, addLikeRT);
-router.delete("/:id/likes/rt", parseUserFromQuery, findTweet, removeLikeRT);
+router.post("/:id/likes/rt", checkAuth, parseUserFromQuery, findTweet, addLikeRT);
+router.delete("/:id/likes/rt", checkAuth, parseUserFromQuery, findTweet, removeLikeRT);
 
 //retweet/undo retweet routes
 
-router.post("/:id/retweet", parseUserFromQuery, findTweet, retweet);
-router.delete("/:id/retweet", parseUserFromQuery, findTweet, undoRetweet);
+router.post("/:id/retweet", checkAuth, parseUserFromQuery, findTweet, retweet);
+router.delete("/:id/retweet", checkAuth, parseUserFromQuery, findTweet, undoRetweet);
 
 //comment route
 
-router.post("/:id/comments", parseUserFromQuery, findTweet, addComment);
+router.post("/:id/comments", checkAuth, parseUserFromQuery, findTweet, addComment);
 
 module.exports = router;
