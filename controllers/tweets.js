@@ -6,7 +6,6 @@ const { includeOptions, getPopulatedTweet } = require("./utils/tweetUtils");
 function getTweetsByUser(req, res, next) {
   const { user } = req;
 
-  req.session.cookie.test = "yes";
   user
     .getTweets({
       limit: 10,

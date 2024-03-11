@@ -69,4 +69,10 @@ Tweet.belongsTo(User, {
   foreignKey: { name: "authorId", allowNull: false },
 });
 
+User.prototype.hidePassword = function() {
+  const values = { ...this.get() };
+  delete values.password;
+  return values;
+};
+
 module.exports = User;

@@ -6,14 +6,14 @@ const notAuthenticatedError = new Error("Not authenticated");
 notAuthenticatedError.status = 401;
 
 function extractToken(header) {
-  return req.get("Authorization").split(" ")[1];
+  return header.split(" ")[1];
 }
 
 function checkAuth(req, res, next) {
   const authHeader = req.get("Authorization");
 
   if (!authHeader) {
-    next(notAuthenticatedError);
+    return next(notAuthenticatedError);
   }
 
   const jwtToken = extractToken(authHeader);
@@ -27,7 +27,7 @@ function checkAuth(req, res, next) {
   }
 
   if (!decodedToken) {
-    next(notAuthenticatedError);
+    return next(notAuthenticatedError);
   }
 
   req.userId = decodedToken.userId;

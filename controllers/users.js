@@ -53,7 +53,7 @@ const createUser = (req, res, next) => {
         webpage,
       });
     })
-    .then((user) => res.json({ success: true, user }))
+    .then((user) => res.json({ success: true, userId: user.id }))
     .catch(next);
 };
 
@@ -64,7 +64,7 @@ const login = (req, res, next) => {
   if (!email || !password) {
     const error = new Error("Invalid request - User data must be informed");
     error.status = 400;
-    next(error);
+    return next(error);
   }
 
   User.findOne({ where: { email } })
@@ -72,17 +72,17 @@ const login = (req, res, next) => {
       if (!registeredUser) {
         const error = new Error("User not found");
         error.status = 404;
-        next(error);
+        return next(error);
       }
 
-      user = registeredUser;
-      return bcrypt.compare(password, user.password);
+      user = registeredUser.hidePassword();
+      return bcrypt.compare(password, registeredUser.password);
     })
     .then((correctPassword) => {
       if (!correctPassword) {
         const error = new Error("Wrong Password");
         error.status = 401;
-        next(error);
+        return next(error);
       }
 
       const jwtToken = jwt.sign(
@@ -95,8 +95,12 @@ const login = (req, res, next) => {
         }
       );
 
-      res.status(200).json({ success: true, jwtToken, userId: user.id });
+      res.status(200).json({ success: true, jwtToken, user });
     });
+};
+
+const logout = (req, res, next) => {
+  return;
 };
 
 //middlewares //todo move to a middlewares folder
@@ -172,4 +176,5 @@ module.exports = {
   createUser,
   verifyUser,
   login,
+  logout,
 };
