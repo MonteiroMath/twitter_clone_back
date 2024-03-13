@@ -99,10 +99,6 @@ const login = (req, res, next) => {
     });
 };
 
-const logout = (req, res, next) => {
-  return;
-};
-
 //middlewares //todo move to a middlewares folder
 
 const findUser = (req, res, next) => {
@@ -176,5 +172,4 @@ module.exports = {
   createUser,
   verifyUser,
   login,
-  logout,
 };
