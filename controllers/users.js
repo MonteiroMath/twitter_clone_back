@@ -53,7 +53,21 @@ const createUser = (req, res, next) => {
         webpage,
       });
     })
-    .then((user) => res.json({ success: true, userId: user.id }))
+    .then((user) => {
+      const safeUser = user.hidePassword();
+
+      const jwtToken = jwt.sign(
+        {
+          userId: user.id,
+        },
+        JWT_SECRET,
+        {
+          expiresIn: "1h",
+        }
+      );
+
+      res.status(200).json({ success: true, jwtToken, user: safeUser });
+    })
     .catch(next);
 };
 
