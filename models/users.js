@@ -14,6 +14,7 @@ const User = sequelize.define("user", {
   username: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
   email: {
     type: DataTypes.STRING,
@@ -69,7 +70,7 @@ Tweet.belongsTo(User, {
   foreignKey: { name: "authorId", allowNull: false },
 });
 
-User.prototype.hidePassword = function() {
+User.prototype.hidePassword = function () {
   const values = { ...this.get() };
   delete values.password;
   return values;
