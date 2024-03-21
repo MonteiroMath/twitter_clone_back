@@ -4,10 +4,27 @@ const User = require("../models/users");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const getUsers = (req, res) => {
-  //return the list of users
+const getUserByUsername = (req, res, next) => {
+  //return the list of users or a user by Username
 
-  User.findAll().then((users) => res.json({ success: true, users }));
+  const { username } = req.query;
+
+  if (!username) {
+    return next(new Error("You must inform the username in the query"));
+  }
+
+  User.findOne({ where: { username: username } }).then((user) => {
+    if (!user) {
+      return next(new Error("User not found"));
+    }
+
+    res.json({
+      success: true,
+      user: user.hidePassword(),
+    });
+  });
+
+  //User.findAll().then((users) => res.json({ success: true, users }));
 };
 
 const getUser = (req, res) => {
@@ -178,8 +195,8 @@ function verifyUser(req, res, next) {
 }
 
 module.exports = {
-  getUsers,
   getUser,
+  getUserByUsername,
   findUser,
   parseUserFromBody,
   parseUserFromQuery,
