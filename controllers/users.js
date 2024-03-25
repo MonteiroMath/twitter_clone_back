@@ -164,13 +164,20 @@ const parseUserFromBody = (req, res, next) => {
 };
 
 const parseUserFromQuery = (req, res, next) => {
-  const { userId } = req.query;
+  const { username, userId } = req.query;
 
-  if (!userId) throw new Error("An user id must be informed");
+  if (!username && !userId)
+    throw new Error("An username or userId must be informed");
 
-  User.findByPk(userId)
+  const getUserPromise = userId
+    ? User.findByPk(userId)
+    : User.findOne({ where: { username: username } });
+
+  getUserPromise
     .then((user) => {
-      if (!user) throw new Error(`User ${userId} not found`);
+      if (!user) {
+        return next(new Error("User not found"));
+      }
       req.user = user;
       next();
     })
