@@ -1,5 +1,6 @@
 require("../models/likes");
 const { Tweet, TWEET_TYPES } = require("../models/tweets");
+const User = require("../models/users");
 
 const { includeOptions, getPopulatedTweet } = require("./utils/tweetUtils");
 
@@ -11,7 +12,14 @@ function getTweetsByUser(req, res, next) {
       limit: 10,
       subQuery: false,
       order: [["createdAt", "DESC"]],
-      include: "reference",
+      include: [
+        "reference",
+        {
+          model: User,
+          as: "author",
+          attributes: ["id", "username", "avatar"],
+        },
+      ],
       attributes: {
         include: includeOptions(user.id),
       },

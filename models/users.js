@@ -67,6 +67,7 @@ User.hasMany(Tweet, {
   foreignKey: { name: "authorId", allowNull: false },
 });
 Tweet.belongsTo(User, {
+  as: "author",
   foreignKey: { name: "authorId", allowNull: false },
 });
 

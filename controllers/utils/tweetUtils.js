@@ -1,5 +1,6 @@
 const Sequelize = require("sequelize");
 const { Tweet, TWEET_TYPES } = require("../../models/tweets");
+const User = require("../../models/users");
 
 //define the include options for select queries on tweets
 function includeOptions(userId) {
