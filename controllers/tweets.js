@@ -13,7 +13,15 @@ function getTweetsByUser(req, res, next) {
       subQuery: false,
       order: [["createdAt", "DESC"]],
       include: [
-        "reference",
+        {
+          model: Tweet,
+          as: "reference",
+          include: {
+            model: User,
+            as: "author",
+            attributes: ["id", "username", "avatar"],
+          },
+        },
         {
           model: User,
           as: "author",
@@ -44,6 +52,13 @@ function getReference(req, res, next) {
   if (!tweet.referenceId) throw new Error("Tweet has no reference.");
   tweet
     .getReference({
+      include: [
+        {
+          model: User,
+          as: "author",
+          attributes: ["id", "username", "avatar"],
+        },
+      ],
       attributes: {
         include: includeOptions(user.id),
       },
@@ -82,13 +97,18 @@ function getAnswers(req, res, next) {
   const { user } = req;
   const { id } = req.params;
 
-  console.log(id);
-
   Tweet.findAll({
     where: {
       referenceId: id,
       type: TWEET_TYPES.ANSWER,
     },
+    include: [
+      {
+        model: User,
+        as: "author",
+        attributes: ["id", "username", "avatar"],
+      },
+    ],
     attributes: {
       include: includeOptions(user.id),
     },
