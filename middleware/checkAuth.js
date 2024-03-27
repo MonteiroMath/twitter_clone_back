@@ -30,7 +30,7 @@ function checkAuth(req, res, next) {
     return next(notAuthenticatedError);
   }
 
-  req.userId = decodedToken.userId;
+  req.reqUserId = decodedToken.userId;
 
   next();
 }

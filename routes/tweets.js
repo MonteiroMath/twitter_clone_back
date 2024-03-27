@@ -28,7 +28,7 @@ const {
 } = require("../controllers/users");
 
 // GET tweets for a specific user
-router.get("/", parseUserFromQuery, getTweetsByUser);
+router.get("/", checkAuth, parseUserFromQuery, getTweetsByUser);
 
 //get a Tweet by id
 router.get("/:id", parseUserFromQuery, findTweet, getTweet);
@@ -46,22 +46,58 @@ router.post("/", checkAuth, parseUserFromBody, postTweet);
 //get Answers for a tweet
 router.get("/:id/answers/", parseUserFromQuery, getAnswers);
 //Post a new answer
-router.post("/:id/answers/", checkAuth, parseUserFromBody, findTweet, postAnswer);
+router.post(
+  "/:id/answers/",
+  checkAuth,
+  parseUserFromBody,
+  findTweet,
+  postAnswer
+);
 
 //like/unline routes
 router.post("/:id/likes", checkAuth, parseUserFromQuery, findTweet, addLike);
-router.delete("/:id/likes", checkAuth, parseUserFromQuery, findTweet, removeLike);
+router.delete(
+  "/:id/likes",
+  checkAuth,
+  parseUserFromQuery,
+  findTweet,
+  removeLike
+);
 
-router.post("/:id/likes/rt", checkAuth, parseUserFromQuery, findTweet, addLikeRT);
-router.delete("/:id/likes/rt", checkAuth, parseUserFromQuery, findTweet, removeLikeRT);
+router.post(
+  "/:id/likes/rt",
+  checkAuth,
+  parseUserFromQuery,
+  findTweet,
+  addLikeRT
+);
+router.delete(
+  "/:id/likes/rt",
+  checkAuth,
+  parseUserFromQuery,
+  findTweet,
+  removeLikeRT
+);
 
 //retweet/undo retweet routes
 
 router.post("/:id/retweet", checkAuth, parseUserFromQuery, findTweet, retweet);
-router.delete("/:id/retweet", checkAuth, parseUserFromQuery, findTweet, undoRetweet);
+router.delete(
+  "/:id/retweet",
+  checkAuth,
+  parseUserFromQuery,
+  findTweet,
+  undoRetweet
+);
 
 //comment route
 
-router.post("/:id/comments", checkAuth, parseUserFromQuery, findTweet, addComment);
+router.post(
+  "/:id/comments",
+  checkAuth,
+  parseUserFromQuery,
+  findTweet,
+  addComment
+);
 
 module.exports = router;

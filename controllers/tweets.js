@@ -5,7 +5,7 @@ const User = require("../models/users");
 const { includeOptions, getPopulatedTweet } = require("./utils/tweetUtils");
 
 function getTweetsByUser(req, res, next) {
-  const { user } = req;
+  const { user, reqUserId } = req;
 
   user
     .getTweets({
@@ -29,7 +29,7 @@ function getTweetsByUser(req, res, next) {
         },
       ],
       attributes: {
-        include: includeOptions(user.id),
+        include: includeOptions(reqUserId),
       },
     })
     .then((tweets) => {
