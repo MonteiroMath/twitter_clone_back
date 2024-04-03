@@ -102,6 +102,7 @@ function getAnswers(req, res, next) {
       referenceId: id,
       type: TWEET_TYPES.ANSWER,
     },
+    order: [["createdAt", "DESC"]],
     include: [
       {
         model: User,
