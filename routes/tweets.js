@@ -44,7 +44,7 @@ router.get(
 router.post("/", checkAuth, parseUserFromBody, postTweet);
 
 //get Answers for a tweet
-router.get("/:id/answers/", parseUserFromQuery, getAnswers);
+router.get("/:id/answers/", parseUserFromQuery, findTweet, getAnswers);
 //Post a new answer
 router.post(
   "/:id/answers/",

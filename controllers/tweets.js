@@ -94,7 +94,7 @@ function postTweet(req, res, next) {
 }
 
 function getAnswers(req, res, next) {
-  const { user } = req;
+  const { user, tweet } = req;
   const { id } = req.params;
 
   Tweet.findAll({
@@ -116,7 +116,7 @@ function getAnswers(req, res, next) {
     .then((tweets) => {
       res.json({
         success: true,
-        tweets,
+        tweets: [tweet, ...tweets],
       });
     })
     .catch(next);
