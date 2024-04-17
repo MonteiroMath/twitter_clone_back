@@ -131,14 +131,6 @@ const login = (req, res, next) => {
 };
 
 const followUser = (req, res, next) => {
-  /*
-    - Check if both users exist
-      - If not, next(error)
-    - follower.addFollowed
-    - return updated user
-
-  */
-
   const { reqUserId: followerId } = req;
   const { followedId } = req.params;
 
@@ -162,13 +154,46 @@ const followUser = (req, res, next) => {
       return followerUser.reload();
     })
     .then((updatedFollowerUser) =>
-      res.json({ success: true, user: updatedFollowerUser })
+      res.json({ success: true, user: updatedFollowerUser.hidePassword() })
     )
     .catch(next);
 };
 
 const unfollowUser = (req, res, next) => {
-  return;
+  /*
+    - Check if both users exist
+      - If not, next(error)
+    - follower.removeFollowed
+    - return updated user
+
+  */
+  const { reqUserId: followerId } = req;
+  const { followedId } = req.params;
+
+  let followerUser;
+
+  const findFollowerPromise = User.findByPk(followerId);
+  const fintFollowedPromise = User.findByPk(followedId);
+
+  Promise.all([findFollowerPromise, fintFollowedPromise])
+    .then(([follower, followed]) => {
+      if (!follower) throw new Error(`User ${followerId} not found`);
+      if (!followed) throw new Error(`User ${followedId} not found`);
+
+      followerUser = follower;
+
+      return followerUser.removeFollowed(followed);
+    })
+    .then((success) => {
+      if (!success)
+        throw new Error(`It wasn't possible to unfollow user ${followedId}`);
+
+      return followerUser.reload();
+    })
+    .then((updatedFollowerUser) =>
+      res.json({ success: true, user: updatedFollowerUser.hidePassword() })
+    )
+    .catch(next);
 };
 
 //middlewares //todo move to a middlewares folder
