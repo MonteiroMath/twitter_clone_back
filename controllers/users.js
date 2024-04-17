@@ -130,6 +130,47 @@ const login = (req, res, next) => {
     });
 };
 
+const followUser = (req, res, next) => {
+  /*
+    - Check if both users exist
+      - If not, next(error)
+    - follower.addFollowed
+    - return updated user
+
+  */
+
+  const { reqUserId: followerId } = req;
+  const { followedId } = req.params;
+
+  let followerUser;
+
+  const findFollowerPromise = User.findByPk(followerId);
+  const fintFollowedPromise = User.findByPk(followedId);
+
+  Promise.all([findFollowerPromise, fintFollowedPromise])
+    .then(([follower, followed]) => {
+      if (!follower) throw new Error(`User ${followerId} not found`);
+      if (!followed) throw new Error(`User ${followedId} not found`);
+
+      followerUser = follower;
+      return followerUser.addFollowed(followed);
+    })
+    .then((follow) => {
+      if (!follow)
+        throw new Error(`It wasn't possible to follow user ${followedId}`);
+
+      return followerUser.reload();
+    })
+    .then((updatedFollowerUser) =>
+      res.json({ success: true, user: updatedFollowerUser })
+    )
+    .catch(next);
+};
+
+const unfollowUser = (req, res, next) => {
+  return;
+};
+
 //middlewares //todo move to a middlewares folder
 
 const findUser = (req, res, next) => {
@@ -210,4 +251,6 @@ module.exports = {
   createUser,
   verifyUser,
   login,
+  followUser,
+  unfollowUser,
 };

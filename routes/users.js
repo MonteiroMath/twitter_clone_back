@@ -5,7 +5,11 @@ const {
   getUserByUsername,
   createUser,
   login,
+  followUser,
+  unfollowUser,
 } = require("../controllers/users");
+
+const checkAuth = require("../middleware/checkAuth");
 
 /* GET users listing. */
 router.get("/", getUserByUsername);
@@ -19,5 +23,10 @@ router.get("/:id", getUser);
 
 // GET an user by name
 router.get("/username/:id", getUser);
+
+//Followers routes
+
+router.post("/follow/:followedId", checkAuth, followUser);
+router.delete("/follow/:followedId", checkAuth, unfollowUser);
 
 module.exports = router;

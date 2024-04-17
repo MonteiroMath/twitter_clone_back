@@ -2,18 +2,20 @@ const { DataTypes } = require("sequelize");
 
 const { sequelize } = require("../db/dbAdapter");
 
-const { User } = require("./users");
+const User = require("./users");
 
-const Follower = sequelize.define("follower", {
-  FollowerId: {
+const Follower = sequelize.define("Follow", {
+  followerId: {
     type: DataTypes.INTEGER,
+    allowNull: false,
     references: {
       model: User,
       key: "id",
     },
   },
-  FollowingId: {
+  followedId: {
     type: DataTypes.INTEGER,
+    allowNull: false,
     references: {
       model: User,
       key: "id",
@@ -22,14 +24,15 @@ const Follower = sequelize.define("follower", {
 });
 
 User.belongsToMany(User, {
-  through: Follower,
   as: "follower",
-  foreignKey: "FollowerId",
-});
-User.belongsToMany(User, {
   through: Follower,
-  as: "following",
-  foreignKey: "FollowingId",
+  foreignKey: "followerId",
+});
+
+User.belongsToMany(User, {
+  as: "followed",
+  through: Follower,
+  foreignKey: "followedId",
 });
 
 module.exports = Follower;
