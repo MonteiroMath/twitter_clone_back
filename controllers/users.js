@@ -1,8 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/users");
-const { Sequelize } = require("sequelize");
-const Follower = require("../models/followers");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -74,6 +72,7 @@ const createUser = (req, res, next) => {
         webpage,
       });
     })
+    .then((user) => User.findByPkPopulated(user.id))
     .then((user) => {
       const safeUser = user.hidePassword();
 
@@ -102,7 +101,7 @@ const login = (req, res, next) => {
     return next(error);
   }
 
-  User.findOne({ where: { email } })
+  User.findOnePopulated({ where: { email } })
     .then((registeredUser) => {
       if (!registeredUser) {
         const error = new Error("User not found");
