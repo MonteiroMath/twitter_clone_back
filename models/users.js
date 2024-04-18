@@ -71,6 +71,32 @@ Tweet.belongsTo(User, {
   foreignKey: { name: "authorId", allowNull: false },
 });
 
+User.findByPkPopulated = function (pk) {
+  const options = {
+    attributes: {
+      include: [
+        [
+          Sequelize.literal(`(
+            SELECT COUNT(*) 
+            FROM follows 
+            WHERE follows.followerId = user.id
+          )`),
+          "followedCount",
+        ],
+        [
+          Sequelize.literal(`(
+            SELECT COUNT(*) 
+            FROM follows
+            WHERE follows.followedId = user.id
+          )`),
+          "followersCount",
+        ],
+      ],
+    },
+  };
+
+  return User.findByPk(pk, options);
+};
 User.prototype.hidePassword = function () {
   const values = { ...this.get() };
   delete values.password;

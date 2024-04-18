@@ -29,7 +29,7 @@ var server = http.createServer(app);
  */
 
 sequelize
-  .sync( /*{force: true}*/)
+  .sync(/*{force: true}*/)
   .then(() => User.findByPk(1))
   .then((user) => {
     if (!user) {

@@ -1,6 +1,8 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/users");
+const { Sequelize } = require("sequelize");
+const Follower = require("../models/followers");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -13,7 +15,9 @@ const getUserByUsername = (req, res, next) => {
     return next(new Error("You must inform the username in the query"));
   }
 
-  User.findOne({ where: { username: username } }).then((user) => {
+  User.findOne({
+    where: { username: username },
+  }).then((user) => {
     if (!user) {
       return next(new Error("User not found"));
     }
@@ -151,7 +155,7 @@ const followUser = (req, res, next) => {
       if (!follow)
         throw new Error(`It wasn't possible to follow user ${followedId}`);
 
-      return followerUser.reload();
+      return User.findByPkPopulated(followerId);
     })
     .then((updatedFollowerUser) =>
       res.json({ success: true, user: updatedFollowerUser.hidePassword() })
@@ -188,7 +192,7 @@ const unfollowUser = (req, res, next) => {
       if (!success)
         throw new Error(`It wasn't possible to unfollow user ${followedId}`);
 
-      return followerUser.reload();
+      return User.findByPkPopulated(followerId);
     })
     .then((updatedFollowerUser) =>
       res.json({ success: true, user: updatedFollowerUser.hidePassword() })

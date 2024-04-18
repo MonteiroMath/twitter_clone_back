@@ -4,7 +4,7 @@ const { sequelize } = require("../db/dbAdapter");
 
 const User = require("./users");
 
-const Follower = sequelize.define("Follow", {
+const Follower = sequelize.define("follow", {
   followerId: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -26,13 +26,13 @@ const Follower = sequelize.define("Follow", {
 User.belongsToMany(User, {
   as: "follower",
   through: Follower,
-  foreignKey: "followerId",
+  foreignKey: "followedId",
 });
 
 User.belongsToMany(User, {
   as: "followed",
   through: Follower,
-  foreignKey: "followedId",
+  foreignKey: "followerId",
 });
 
 module.exports = Follower;
