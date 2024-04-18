@@ -137,6 +137,11 @@ const followUser = (req, res, next) => {
   const { reqUserId: followerId } = req;
   const { followedId } = req.params;
 
+  if (followerdId === followedId) {
+    const sameUserErr = new Error("User can't follow himself");
+    return next(sameUserErr);
+  }
+
   let followerUser;
 
   const findFollowerPromise = User.findByPk(followerId);
