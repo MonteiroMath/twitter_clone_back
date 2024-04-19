@@ -145,7 +145,8 @@ const login = (req, res, next) => {
       );
 
       res.status(200).json({ success: true, jwtToken, user });
-    });
+    })
+    .catch(next);
 };
 
 const followUser = (req, res, next) => {
@@ -175,10 +176,13 @@ const followUser = (req, res, next) => {
       if (!follow)
         throw new Error(`It wasn't possible to follow user ${followedId}`);
 
-      return User.findByPkPopulated(followerId);
+      return User.findByPkPopulated(followedId);
     })
-    .then((updatedFollowerUser) =>
-      res.json({ success: true, user: updatedFollowerUser.hidePassword() })
+    .then((followedUser) =>
+      res.json({
+        success: true,
+        user: { ...followedUser.hidePassword(), isFollowed: true },
+      })
     )
     .catch(next);
 };
@@ -205,10 +209,13 @@ const unfollowUser = (req, res, next) => {
       if (!success)
         throw new Error(`It wasn't possible to unfollow user ${followedId}`);
 
-      return User.findByPkPopulated(followerId);
+      return User.findByPkPopulated(followedId);
     })
-    .then((updatedFollowerUser) =>
-      res.json({ success: true, user: updatedFollowerUser.hidePassword() })
+    .then((followedUser) =>
+      res.json({
+        success: true,
+        user: { ...followedUser.hidePassword(), isFollowed: false },
+      })
     )
     .catch(next);
 };
