@@ -11,21 +11,19 @@ const {
 
 const checkAuth = require("../middleware/checkAuth");
 
-/* GET users listing. */
-router.get("/", getUserByUsername);
-
-router.post("/register", createUser);
-
-router.post("/login", login);
+/* GET user by userName */
+router.get("/", checkAuth, getUserByUsername);
 
 // GET an user by ID
-router.get("/:id", getUser);
+router.get("/:id", checkAuth, getUser);
 
-// GET an user by name
-router.get("/username/:id", getUser);
+//Register an User
+router.post("/register", createUser);
+
+//Sign in an User
+router.post("/login", login);
 
 //Followers routes
-
 router.post("/follow/:followedId", checkAuth, followUser);
 router.delete("/follow/:followedId", checkAuth, unfollowUser);
 

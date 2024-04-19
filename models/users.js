@@ -107,4 +107,10 @@ User.prototype.hidePassword = function () {
   return values;
 };
 
+User.prototype.markFollowed = function(){
+
+  
+
+}
+
 module.exports = User;

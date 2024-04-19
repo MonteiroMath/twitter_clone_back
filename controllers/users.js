@@ -1,32 +1,47 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/users");
+const Follower = require("../models/followers");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const getUserByUsername = (req, res, next) => {
   //return the list of users or a user by Username
 
+  const { reqUserId: followerId } = req;
   const { username } = req.query;
 
   if (!username) {
-    return next(new Error("You must inform the username in the query"));
+    throw new Error("You must inform the username in the query");
   }
 
-  User.findOne({
+  let followedUser;
+
+  User.findOnePopulated({
     where: { username: username },
-  }).then((user) => {
-    if (!user) {
-      return next(new Error("User not found"));
-    }
+  })
+    .then((user) => {
+      if (!user) {
+        throw new Error("User not found");
+      }
+      followedUser = user;
 
-    res.json({
-      success: true,
-      user: user.hidePassword(),
-    });
-  });
+      return Follower.findOne({
+        where: {
+          followerId: followerId,
+          followedId: followedUser.id,
+        },
+      });
+    })
+    .then((followResult) => {
+      const isFollowed = followResult ? true : false;
 
-  //User.findAll().then((users) => res.json({ success: true, users }));
+      res.json({
+        success: true,
+        user: { ...followedUser.hidePassword(), isFollowed },
+      });
+    })
+    .catch(next);
 };
 
 const getUser = (req, res) => {
@@ -58,7 +73,7 @@ const createUser = (req, res, next) => {
       if (user) {
         const error = new Error("User already registered");
         error.status = 409;
-        next(error);
+        throw error;
       }
 
       return bcrypt.hash(password, 12);
@@ -106,7 +121,7 @@ const login = (req, res, next) => {
       if (!registeredUser) {
         const error = new Error("User not found");
         error.status = 404;
-        return next(error);
+        throw error;
       }
 
       user = registeredUser.hidePassword();
@@ -116,7 +131,7 @@ const login = (req, res, next) => {
       if (!correctPassword) {
         const error = new Error("Wrong Password");
         error.status = 401;
-        return next(error);
+        throw error;
       }
 
       const jwtToken = jwt.sign(
@@ -137,7 +152,7 @@ const followUser = (req, res, next) => {
   const { reqUserId: followerId } = req;
   const { followedId } = req.params;
 
-  if (followerdId === followedId) {
+  if (parseInt(followerId) === parseInt(followedId)) {
     const sameUserErr = new Error("User can't follow himself");
     return next(sameUserErr);
   }
@@ -153,6 +168,7 @@ const followUser = (req, res, next) => {
       if (!followed) throw new Error(`User ${followedId} not found`);
 
       followerUser = follower;
+
       return followerUser.addFollowed(followed);
     })
     .then((follow) => {
@@ -168,13 +184,6 @@ const followUser = (req, res, next) => {
 };
 
 const unfollowUser = (req, res, next) => {
-  /*
-    - Check if both users exist
-      - If not, next(error)
-    - follower.removeFollowed
-    - return updated user
-
-  */
   const { reqUserId: followerId } = req;
   const { followedId } = req.params;
 
@@ -250,7 +259,7 @@ const parseUserFromQuery = (req, res, next) => {
   getUserPromise
     .then((user) => {
       if (!user) {
-        return next(new Error("User not found"));
+        throw new Error("User not found");
       }
       req.user = user;
       next();
