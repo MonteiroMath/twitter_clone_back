@@ -95,7 +95,7 @@ const populatedOptions = {
 };
 
 User.findOnePopulated = function (queryObj) {
-  return User.findOne(queryObj, populatedOptions);
+  return User.findOne({ ...queryObj, ...populatedOptions });
 };
 
 User.findByPkPopulated = function (pk) {
@@ -107,10 +107,6 @@ User.prototype.hidePassword = function () {
   return values;
 };
 
-User.prototype.markFollowed = function(){
-
-  
-
-}
+User.prototype.markFollowed = function () {};
 
 module.exports = User;
