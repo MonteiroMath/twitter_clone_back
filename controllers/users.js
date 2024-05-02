@@ -220,6 +220,47 @@ const unfollowUser = (req, res, next) => {
     .catch(next);
 };
 
+const getFollowers = (req, res, next) => {
+  const { username } = req.params;
+
+  User.findOne({
+    where: {
+      username,
+    },
+  })
+    .then((user) => {
+      if (!user) {
+        throw new Error("User not found");
+      }
+      return user.getFollower();
+    })
+    .then((followers) => {
+      res.json({ success: true, followers });
+    })
+    .catch(next);
+};
+
+const getFollowing = (req, res, next) => {
+  const { username } = req.params;
+
+  User.findOne({
+    where: {
+      username,
+    },
+  })
+    .then((user) => {
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      return user.getFollowed();
+    })
+    .then((followed) => {
+      res.json({ success: true, followed });
+    })
+    .catch(next);
+};
+
 //middlewares //todo move to a middlewares folder
 
 const findUser = (req, res, next) => {
@@ -302,4 +343,6 @@ module.exports = {
   login,
   followUser,
   unfollowUser,
+  getFollowers,
+  getFollowing,
 };

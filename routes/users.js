@@ -7,6 +7,8 @@ const {
   login,
   followUser,
   unfollowUser,
+  getFollowers,
+  getFollowing,
 } = require("../controllers/users");
 
 const checkAuth = require("../middleware/checkAuth");
@@ -26,5 +28,8 @@ router.post("/login", login);
 //Followers routes
 router.post("/follow/:followedId", checkAuth, followUser);
 router.delete("/follow/:followedId", checkAuth, unfollowUser);
+
+router.get("/:username/followers", getFollowers);
+router.get("/:username/following", getFollowing);
 
 module.exports = router;
