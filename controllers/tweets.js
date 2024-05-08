@@ -6,10 +6,12 @@ const { includeOptions, getPopulatedTweet } = require("./utils/tweetUtils");
 
 function getTweets(req, res, next) {
   const { user, reqUserId } = req;
+  const { page } = req.query;
 
   if (!user) {
     return Tweet.findAll({
       limit: 10,
+      offset: page ? (page-1) * 10 : 0,
       order: [["createdAt", "DESC"]],
       include: [
         {
