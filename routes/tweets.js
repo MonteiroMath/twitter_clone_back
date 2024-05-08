@@ -6,7 +6,7 @@ const checkAuth = require("../middleware/checkAuth");
 const {
   getTweet,
   getReference,
-  getTweetsByUser,
+  getTweets,
   postTweet,
   addLike,
   removeLike,
@@ -27,8 +27,10 @@ const {
   parseUserFromQuery,
 } = require("../controllers/users");
 
+
+
 // GET tweets for a specific user
-router.get("/", checkAuth, parseUserFromQuery, getTweetsByUser);
+router.get("/", checkAuth, parseUserFromQuery, getTweets);
 
 //get a Tweet by id
 router.get("/:id", parseUserFromQuery, findTweet, getTweet);

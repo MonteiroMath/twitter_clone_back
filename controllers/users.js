@@ -297,8 +297,11 @@ const parseUserFromBody = (req, res, next) => {
 const parseUserFromQuery = (req, res, next) => {
   const { username, userId } = req.query;
 
-  if (!username && !userId)
-    throw new Error("An username or userId must be informed");
+  if (!username && !userId){
+    req.user = null;
+    return next()
+  }
+    
 
   const getUserPromise = userId
     ? User.findByPk(userId)

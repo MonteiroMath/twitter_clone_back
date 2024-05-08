@@ -4,8 +4,41 @@ const User = require("../models/users");
 
 const { includeOptions, getPopulatedTweet } = require("./utils/tweetUtils");
 
-function getTweetsByUser(req, res, next) {
+function getTweets(req, res, next) {
   const { user, reqUserId } = req;
+
+  if (!user) {
+    return Tweet.findAll({
+      limit: 10,
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: Tweet,
+          as: "reference",
+          include: {
+            model: User,
+            as: "author",
+            attributes: ["id", "username", "avatar"],
+          },
+        },
+        {
+          model: User,
+          as: "author",
+          attributes: ["id", "username", "avatar"],
+        },
+      ],
+      attributes: {
+        include: includeOptions(reqUserId),
+      },
+    })
+      .then((tweets) => {
+        res.json({
+          success: true,
+          tweets,
+        });
+      })
+      .catch(next);
+  }
 
   user
     .getTweets({
@@ -341,7 +374,7 @@ function findTweet(req, res, next) {
   const { user } = req;
   const { id } = req.params;
 
-  if (!user) throw new Error("An user id must be informed");
+  if (!user) throw new Error("An user must be informed");
 
   getPopulatedTweet(id, user.id)
     .then((tweet) => {
@@ -354,7 +387,7 @@ function findTweet(req, res, next) {
 }
 
 module.exports = {
-  getTweetsByUser,
+  getTweets,
   getTweet,
   getReference,
   postTweet,
