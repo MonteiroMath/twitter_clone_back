@@ -8,65 +8,36 @@ function getTweets(req, res, next) {
   const { user, reqUserId } = req;
   const { page } = req.query;
 
-  if (!user) {
-    return Tweet.findAll({
-      limit: 10,
-      offset: page ? (page-1) * 10 : 0,
-      order: [["createdAt", "DESC"]],
-      include: [
-        {
-          model: Tweet,
-          as: "reference",
-          include: {
-            model: User,
-            as: "author",
-            attributes: ["id", "username", "avatar"],
-          },
-        },
-        {
+  const options = {
+    limit: 10,
+    offset: page ? (page - 1) * 10 : 0,
+    order: [["createdAt", "DESC"]],
+    include: [
+      {
+        model: Tweet,
+        as: "reference",
+        include: {
           model: User,
           as: "author",
           attributes: ["id", "username", "avatar"],
         },
-      ],
-      attributes: {
-        include: includeOptions(reqUserId),
       },
-    })
-      .then((tweets) => {
-        res.json({
-          success: true,
-          tweets,
-        });
-      })
-      .catch(next);
-  }
+      {
+        model: User,
+        as: "author",
+        attributes: ["id", "username", "avatar"],
+      },
+    ],
+    attributes: {
+      include: includeOptions(reqUserId),
+    },
+  };
 
-  user
-    .getTweets({
-      limit: 10,
-      subQuery: false,
-      order: [["createdAt", "DESC"]],
-      include: [
-        {
-          model: Tweet,
-          as: "reference",
-          include: {
-            model: User,
-            as: "author",
-            attributes: ["id", "username", "avatar"],
-          },
-        },
-        {
-          model: User,
-          as: "author",
-          attributes: ["id", "username", "avatar"],
-        },
-      ],
-      attributes: {
-        include: includeOptions(reqUserId),
-      },
-    })
+  const getTweetsPromise = user
+    ? user.getTweets(options)
+    : Tweet.findAll(options);
+
+  getTweetsPromise
     .then((tweets) => {
       res.json({
         success: true,
