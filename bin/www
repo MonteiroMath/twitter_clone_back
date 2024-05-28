@@ -7,6 +7,7 @@
 var app = require("../app");
 var debug = require("debug")("twitter-b:server");
 var http = require("http");
+const socketio = require("socket.io");
 
 const { sequelize } = require("../db/dbAdapter");
 const User = require("../models/users");
@@ -45,6 +46,12 @@ sequelize
   })
   .then((user) => {
     server.listen(port);
+
+    const io = socketio(server);
+
+    io.on("connection", (socket) => {
+      console.log("hello world");
+    });
   })
   .catch((err) => console.log(err));
 
