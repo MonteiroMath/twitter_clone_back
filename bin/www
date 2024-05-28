@@ -7,10 +7,9 @@
 var app = require("../app");
 var debug = require("debug")("twitter-b:server");
 var http = require("http");
-const socketio = require("socket.io");
+const { Server } = require("socket.io");
 
 const { sequelize } = require("../db/dbAdapter");
-const User = require("../models/users");
 
 /**
  * Get port from environment and store in Express.
@@ -24,7 +23,12 @@ app.set("port", port);
  */
 
 var server = http.createServer(app);
-
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
 /**
  * Listen on provided port, on all network interfaces.
  */
@@ -32,12 +36,10 @@ var server = http.createServer(app);
 sequelize
   .sync(/*{force: true}*/)
   .then(() => {
-    const listening = server.listen(port);
-
-    const io = socketio(listening);
+    server.listen(port);
 
     io.on("connection", (socket) => {
-      console.log("hello world hello world hello world  hello world");
+      console.log("hello world");
     });
   })
   .catch((err) => console.log(err));
