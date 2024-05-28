@@ -31,26 +31,13 @@ var server = http.createServer(app);
 
 sequelize
   .sync(/*{force: true}*/)
-  .then(() => User.findByPk(1))
-  .then((user) => {
-    if (!user) {
-      return User.create({
-        username: "TestUser",
-        email: "test@test.com",
-        password: "test",
-        birthDate: "1992-05-28",
-      });
-    }
+  .then(() => {
+    const listening = server.listen(port);
 
-    return user;
-  })
-  .then((user) => {
-    server.listen(port);
-
-    const io = socketio(server);
+    const io = socketio(listening);
 
     io.on("connection", (socket) => {
-      console.log("hello world");
+      console.log("hello world hello world hello world  hello world");
     });
   })
   .catch((err) => console.log(err));
