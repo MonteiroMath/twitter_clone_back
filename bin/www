@@ -7,7 +7,7 @@
 var app = require("../app");
 var debug = require("debug")("twitter-b:server");
 var http = require("http");
-const { Server } = require("socket.io");
+const socket = require("../socket");
 
 const { sequelize } = require("../db/dbAdapter");
 
@@ -23,12 +23,7 @@ app.set("port", port);
  */
 
 var server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-  },
-});
+let io = socket.init(server)
 /**
  * Listen on provided port, on all network interfaces.
  */
