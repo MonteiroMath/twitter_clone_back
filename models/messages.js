@@ -1,7 +1,7 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbAdapter");
 
-const { User } = require("./users");
+const User = require("./users");
 
 const Message = sequelize.define("message", {
   id: {
@@ -24,14 +24,14 @@ const Message = sequelize.define("message", {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-  author: {
+  authorID: {
     type: Sequelize.INTEGER,
     references: {
       model: "users",
       key: "id",
     },
   },
-  recipient: {
+  recipientID: {
     type: Sequelize.INTEGER,
     references: {
       model: "users",
@@ -42,19 +42,21 @@ const Message = sequelize.define("message", {
 
 User.hasMany(Message, {
   onDelete: "CASCADE",
-  foreignKey: { name: "author", allowNull: false },
+  foreignKey: { name: "authorID", allowNull: false },
 });
 
 Message.belongsTo(User, {
   as: "author",
-  foreignKey: { name: "author", allowNull: false },
+  foreignKey: { name: "authorID", allowNull: false },
 });
 
 User.hasMany(Message, {
-  foreignKey: { name: "recipient", allowNull: false },
+  foreignKey: { name: "recipientID", allowNull: false },
 });
 
 Message.belongsTo(User, {
   as: "recipient",
-  foreignKey: { name: "recipient", allowNull: false },
+  foreignKey: { name: "recipientID", allowNull: false },
 });
+
+module.exports = Message;
