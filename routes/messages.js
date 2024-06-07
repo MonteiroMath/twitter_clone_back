@@ -3,8 +3,9 @@ const router = express.Router();
 
 const checkAuth = require("../middleware/checkAuth");
 
-const { postMessage } = require("../controllers/messages");
+const { getMessages, postMessage } = require("../controllers/messages");
 
+router.get("/:authorID/:recipientID", getMessages);
 router.post("/", postMessage);
 
 module.exports = router;

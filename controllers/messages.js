@@ -2,6 +2,23 @@ const socket = require("../socket");
 const User = require("../models/users");
 const Message = require("../models/messages");
 
+function getMessages(req, res, next) {
+  const { authorID, recipientID } = req.params;
+
+  Message.findAll({
+    where: {
+      authorID,
+      recipientID,
+    },
+    order: [["createdAt", "DESC"]],
+    limit: 10,
+  })
+    .then((messages) => {
+      res.json({ success: true, messages });
+    })
+    .catch(next);
+}
+
 function postMessage(req, res, next) {
   const { newMessage } = req.body;
 
@@ -42,5 +59,6 @@ function postMessage(req, res, next) {
 }
 
 module.exports = {
+  getMessages,
   postMessage,
 };
