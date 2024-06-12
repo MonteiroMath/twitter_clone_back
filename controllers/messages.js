@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const socket = require("../socket");
 const User = require("../models/users");
 const Message = require("../models/messages");
@@ -7,10 +8,14 @@ function getMessages(req, res, next) {
 
   Message.findAll({
     where: {
-      authorID,
-      recipientID,
+      authorID: {
+        [Op.or]: [authorID, recipientID],
+      },
+      recipientID: {
+        [Op.or]: [authorID, recipientID],
+      },
     },
-    order: [["createdAt", "DESC"]],
+    order: [["createdAt", "ASC"]],
     limit: 10,
   })
     .then((messages) => {
