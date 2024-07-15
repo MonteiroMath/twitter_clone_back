@@ -2,6 +2,7 @@ const { sequelize } = require("../db/dbAdapter");
 const { QueryTypes } = require("sequelize");
 const socket = require("../socket");
 const User = require("../models/users");
+const Conversation = require("../models/conversations");
 const Message = require("../models/messages");
 
 function getMessages(req, res, next) {
@@ -67,25 +68,11 @@ function postMessage(req, res, next) {
 function getConversations(req, res, next) {
   const { userID } = req.params;
 
-  sequelize
-    .query(
-      `
-    SELECT M.* 
-    FROM (
-      SELECT authorID, recipientID, MAX(createdAt) AS maxCreatedAt
-      FROM messages
-      WHERE authorID = :userId OR recipientID = :userId
-      GROUP BY authorID, recipientID
-    ) AS X
-    JOIN messages AS M ON M.authorID = X.authorID AND M.recipientID = X.recipientID AND M.createdAt = X.maxCreatedAt
-  `,
-      {
-        replacements: { userId: userID },
-        type: QueryTypes.SELECT,
-      }
-    )
-    .then((messages) => {
-      res.json({ success: true, messages });
+  Conversation.findAll({
+    include: [{ model: User, where: { id: userID } }],
+  })
+    .then((conversations) => {
+      res.json({ success: true, conversations });
     })
     .catch((error) => {
       console.error(error);
