@@ -26,6 +26,32 @@ function getMessages(req, res, next) {
     .catch(next);
 }
 
+function postConversation(req, res) {
+  const { from, to } = req.body;
+
+  if (!from || !to) {
+    throw new Error("Missing required data");
+  }
+
+  const findAuthorPromise = User.findByPk(authorID);
+  const findRecipientPromise = User.findByPk(recipientID);
+
+  Promise.all([findAuthorPromise, findRecipientPromise])
+    .then(([author, recipient]) => {
+      if (!author) throw new Error(`User ${from} not found`);
+      if (!recipient) throw new Error(`User ${to} not found`);
+
+      return Conversation.create();
+    })
+    .then((conversation) => {
+      conversation.setUsers([author, recipient]);
+    })
+    .then((conversation) => {
+      res.json({ success: true, conversation });
+    })
+    .catch(next);
+}
+
 function postMessage(req, res, next) {
   const { newMessage } = req.body;
 
