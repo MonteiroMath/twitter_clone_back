@@ -73,7 +73,7 @@ function postMessage(req, res, next) {
       if (!author) throw new Error(`User ${userID} not found`);
       if (!conversation) throw new Error(`User ${conversationID} not found`);
 
-      return conversation.addMessage({
+      return conversation.createMessage({
         userID,
         message,
       });
