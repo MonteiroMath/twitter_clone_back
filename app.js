@@ -8,6 +8,7 @@ require("dotenv").config();
 
 const User = require("./models/users");
 const Follower = require("./models/followers");
+const conversationParticipant = require("./models/conversationsParticipants");
 
 const usersRouter = require("./routes/users");
 const tweetsRouter = require("./routes/tweets");

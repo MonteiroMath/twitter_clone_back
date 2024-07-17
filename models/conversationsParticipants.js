@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const { sequelize } = frequire("../db/dbAdapter");
+const { sequelize } = require("../db/dbAdapter");
 
 const User = require("./users");
 const Conversation = require("./conversations");
@@ -25,8 +25,13 @@ const ConversationParticipants = sequelize.define("conversationParticipant", {
 
 User.belongsToMany(Conversation, {
   through: ConversationParticipants,
+  foreignKey: "userID",
 });
 
-Conversation.belongsToMany(User, { through: ConversationParticipants });
+Conversation.belongsToMany(User, {
+  through: ConversationParticipants,
+  as: "participants",
+  foreignKey: "conversationID",
+});
 
 module.exports = ConversationParticipants;

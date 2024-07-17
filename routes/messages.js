@@ -7,10 +7,12 @@ const {
   getMessages,
   postMessage,
   getConversations,
+  postConversation,
 } = require("../controllers/messages");
 
 router.get("/conversations/:userID", getConversations);
-router.get("/:authorID/:recipientID", getMessages);
-router.post("/", postMessage);
+router.get("/:conversationID", getMessages);
+router.post("/:conversationID", postMessage);
+router.post("/", postConversation);
 
 module.exports = router;

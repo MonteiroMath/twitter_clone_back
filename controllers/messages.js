@@ -25,15 +25,15 @@ function getMessages(req, res, next) {
     .catch(next);
 }
 
-function postConversation(req, res) {
+function postConversation(req, res, next) {
   const { from, to } = req.body;
 
   if (!from || !to) {
     throw new Error("Missing required data");
   }
 
-  const findAuthorPromise = User.findByPk(authorID);
-  const findRecipientPromise = User.findByPk(recipientID);
+  const findAuthorPromise = User.findByPk(from);
+  const findRecipientPromise = User.findByPk(to);
 
   Promise.all([findAuthorPromise, findRecipientPromise])
     .then(([author, recipient]) => {
@@ -43,7 +43,7 @@ function postConversation(req, res) {
       return Conversation.create();
     })
     .then((conversation) => {
-      conversation.setUsers([author, recipient]);
+      return conversation.setParticipants([from, to]);
     })
     .then((conversation) => {
       res.json({ success: true, conversation });
