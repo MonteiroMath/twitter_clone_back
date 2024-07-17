@@ -6,20 +6,19 @@ const Conversation = require("../models/conversations");
 const Message = require("../models/messages");
 
 function getMessages(req, res, next) {
-  const { authorID, recipientID } = req.params;
+  const { conversationID } = req.params;
 
-  Message.findAll({
-    where: {
-      authorID: {
-        [Op.or]: [authorID, recipientID],
-      },
-      recipientID: {
-        [Op.or]: [authorID, recipientID],
-      },
-    },
-    order: [["createdAt", "ASC"]],
-    limit: 10,
-  })
+  Conversation.findByPk(conversationID)
+    .then((conversation) => {
+      if (!conversation) {
+        throw new Error(`Conversation ${conversationID} not found`);
+      }
+
+      return conversation.getMessages({
+        order: [["createdAt", "ASC"]],
+        limit: 10,
+      });
+    })
     .then((messages) => {
       res.json({ success: true, messages });
     })
@@ -105,4 +104,5 @@ module.exports = {
   getMessages,
   postMessage,
   getConversations,
+  postConversation,
 };
