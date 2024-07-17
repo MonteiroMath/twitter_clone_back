@@ -90,14 +90,20 @@ function getConversations(req, res, next) {
   const { userID } = req.params;
 
   Conversation.findAll({
-    include: [{ model: User, where: { id: userID } }],
+    include: [
+      {
+        model: User,
+        as: "participants",
+        where: { id: userID },
+        attributes: [],
+        through: { attributes: [] },
+      },
+    ],
   })
     .then((conversations) => {
       res.json({ success: true, conversations });
     })
-    .catch((error) => {
-      console.error(error);
-    });
+    .catch(next);
 }
 
 module.exports = {
