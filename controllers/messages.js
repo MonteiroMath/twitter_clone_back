@@ -106,9 +106,33 @@ function getConversations(req, res, next) {
     .catch(next);
 }
 
+function getConversationParticipants(req, res, next) {
+  const { conversationID } = req.params;
+
+  Conversation.findByPk(conversationID, {
+    include: [
+      {
+        model: User,
+        as: "participants",
+        attributes: ["id", "username", "avatar"],
+        through: { attributes: [] },
+      },
+    ],
+  })
+    .then((conversation) => {
+      if (!conversation) {
+        throw new Error(`Conversation ${conversationID} not found`);
+      }
+
+      res.json({ success: true, participants: conversation.participants });
+    })
+    .catch(next);
+}
+
 module.exports = {
   getMessages,
   postMessage,
   getConversations,
   postConversation,
+  getConversationParticipants,
 };
