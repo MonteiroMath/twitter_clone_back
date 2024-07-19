@@ -5,26 +5,6 @@ const User = require("../models/users");
 const Conversation = require("../models/conversations");
 const Message = require("../models/messages");
 
-function getMessages(req, res, next) {
-  const { conversationID } = req.params;
-
-  Conversation.findByPk(conversationID)
-    .then((conversation) => {
-      if (!conversation) {
-        throw new Error(`Conversation ${conversationID} not found`);
-      }
-
-      return conversation.getMessages({
-        order: [["createdAt", "ASC"]],
-        limit: 10,
-      });
-    })
-    .then((messages) => {
-      res.json({ success: true, messages });
-    })
-    .catch(next);
-}
-
 function postConversation(req, res, next) {
   const { from, to } = req.body;
 
@@ -106,7 +86,27 @@ function getConversations(req, res, next) {
     .catch(next);
 }
 
-function getConversationParticipants(req, res, next) {
+function getMessages(req, res, next) {
+  const { conversationID } = req.params;
+
+  Conversation.findByPk(conversationID)
+    .then((conversation) => {
+      if (!conversation) {
+        throw new Error(`Conversation ${conversationID} not found`);
+      }
+
+      return conversation.getMessages({
+        order: [["createdAt", "ASC"]],
+        limit: 10,
+      });
+    })
+    .then((messages) => {
+      res.json({ success: true, messages });
+    })
+    .catch(next);
+}
+
+function getSummary(req, res, next) {
   const { conversationID } = req.params;
 
   Conversation.findByPk(conversationID, {
@@ -117,6 +117,11 @@ function getConversationParticipants(req, res, next) {
         attributes: ["id", "username", "avatar"],
         through: { attributes: [] },
       },
+      {
+        model: Message,
+        order: [["createdAt", "DESC"]],
+        limit: 1,
+      },
     ],
   })
     .then((conversation) => {
@@ -124,7 +129,7 @@ function getConversationParticipants(req, res, next) {
         throw new Error(`Conversation ${conversationID} not found`);
       }
 
-      res.json({ success: true, participants: conversation.participants });
+      res.json({ success: true, conversation });
     })
     .catch(next);
 }
@@ -134,5 +139,5 @@ module.exports = {
   postMessage,
   getConversations,
   postConversation,
-  getConversationParticipants,
+  getSummary,
 };
