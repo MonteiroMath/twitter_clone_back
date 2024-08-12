@@ -96,11 +96,12 @@ function getMessages(req, res, next) {
       }
 
       return conversation.getMessages({
-        order: [["createdAt", "ASC"]],
+        order: [["createdAt", "DESC"]],
         limit: 10,
       });
     })
     .then((messages) => {
+      messages.reverse();
       res.json({ success: true, messages });
     })
     .catch(next);
