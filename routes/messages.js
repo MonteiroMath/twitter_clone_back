@@ -17,6 +17,6 @@ router.get("/:conversationID/summary", getSummary);
 router.get("/:conversationID", getMessages);
 router.post("/:conversationID", postMessage);
 router.post("/", postConversation);
-router.put("/messageID", markRead);
+router.put("/read/:messageID", markRead);
 
 module.exports = router;
