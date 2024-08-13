@@ -135,10 +135,29 @@ function getSummary(req, res, next) {
     .catch(next);
 }
 
+function markRead(req, res, next) {
+  const { messageID } = req.params;
+
+  Message.findByPk(messageID)
+    .then((message) => {
+      message.isRead = true;
+      return message.save();
+    })
+    .then((updatedMessage) =>
+      res.json({
+        success: true,
+        message: updatedMessage,
+      })
+    )
+    .catch(next);
+  return;
+}
+
 module.exports = {
   getMessages,
   postMessage,
   getConversations,
   postConversation,
   getSummary,
+  markRead,
 };

@@ -9,6 +9,7 @@ const {
   getConversations,
   getSummary,
   postConversation,
+  markRead,
 } = require("../controllers/messages");
 
 router.get("/conversations/:userID", getConversations);
@@ -16,5 +17,6 @@ router.get("/:conversationID/summary", getSummary);
 router.get("/:conversationID", getMessages);
 router.post("/:conversationID", postMessage);
 router.post("/", postConversation);
+router.put("/messageID", markRead);
 
 module.exports = router;
